@@ -1,0 +1,30 @@
+# ── .NET ──────────────────────────────────────
+**/bin/
+**/obj/
+**/*.user
+**/appsettings.Development.json
+**/appsettings.Production.json
+
+# ── React ─────────────────────────────────────
+**/node_modules/
+**/dist/
+**/.env.local
+**/.env.production
+
+# ── Python ────────────────────────────────────
+**/__pycache__/
+**/*.pyc
+**/.venv/
+analytics/.env
+
+# ── IDE ───────────────────────────────────────
+.vs/
+.vscode/settings.json
+.idea/
+.DS_Store
+*.swp
+
+# ── Secrets ───────────────────────────────────
+**/*.pfx
+**/*.p12
+**/secrets.json
