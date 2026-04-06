@@ -15,10 +15,16 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Import alias */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "erasableSyntaxOnly": false,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
