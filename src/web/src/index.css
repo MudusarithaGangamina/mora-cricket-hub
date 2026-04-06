@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mora-blue:  #1e3a5f;
+  --color-mora-gold:  #c8a96e;
+  --color-mora-green: #2d4a1e;
+}
