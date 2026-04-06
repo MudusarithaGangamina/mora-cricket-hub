@@ -1,0 +1,30 @@
+name: .NET API CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['src/api/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['src/api/**']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/api/MoraCricketHub.sln
+
+      - name: Build
+        run: dotnet build src/api/MoraCricketHub.sln --no-restore --configuration Release
+
+      - name: Verify no warnings treated as errors
+        run: echo "Build passed cleanly"

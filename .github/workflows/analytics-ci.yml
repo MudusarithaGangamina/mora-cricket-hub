@@ -1,0 +1,35 @@
+name: FastAPI Analytics CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['analytics/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['analytics/**']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: analytics
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: analytics/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Verify app loads without errors
+        run: python -c "from main import app; print('FastAPI app OK — routes:', len(app.routes))"
+        env:
+          DATABASE_URL: "postgresql://placeholder:placeholder@localhost/placeholder"
+          FRONTEND_URL: "http://localhost:5173"
