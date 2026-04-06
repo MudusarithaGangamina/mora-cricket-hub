@@ -21,7 +21,7 @@ export const PHASES: Record<PhaseMode, Phase[]> = {
   ],
 }
 
-// T20 phases — used automatically when tournament format is T20
+// T20 phases â€” used automatically when tournament format is T20
 export const T20_PHASES: Phase[] = [
   { label: 'Powerplay',    startOver: 1,  endOver: 6,  color: '#4fc3f7' },
   { label: 'Middle Overs', startOver: 7,  endOver: 15, color: '#66bb6a' },

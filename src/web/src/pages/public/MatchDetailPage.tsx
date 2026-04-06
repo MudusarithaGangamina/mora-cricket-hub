@@ -1,4 +1,4 @@
 export default function MatchDetailPage() {
-  return <div className="p-8 text-slate-400">MatchDetailPage — coming soon</div>
+  return <div className="p-8 text-slate-400">MatchDetailPage â€” coming soon</div>
 }
 

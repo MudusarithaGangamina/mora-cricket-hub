@@ -41,7 +41,7 @@ export const SURFACE_COLORS: Record<SurfaceType, string> = {
   [SurfaceType.TURF]:    '#388e3c',
 }
 
-// Batch colour palette — matches the Streamlit app
+// Batch colour palette â€” matches the Streamlit app
 export const BATCH_COLORS: Record<number, string> = {
   18: '#ef5350',
   19: '#ff7043',

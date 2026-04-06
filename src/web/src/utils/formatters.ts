@@ -9,9 +9,9 @@ export const formatOvers = (overs: number): string => {
 export const formatScore = (runs: number, wickets: number, overs: number): string =>
   `${runs}/${wickets} (${formatOvers(overs)} Ov)`
 
-// Format batting average — show "—" for not-out with no dismissals
+// Format batting average â€” show "â€”" for not-out with no dismissals
 export const formatAverage = (average: number | null): string =>
-  average === null ? '—' : average.toFixed(2)
+  average === null ? 'â€”' : average.toFixed(2)
 
 // Format a date to readable string
 export const formatMatchDate = (dateStr: string): string => {
@@ -41,7 +41,7 @@ export const formatResult = (
   resultMargin: number | null,
   resultMarginType: string | null
 ): string => {
-  if (!resultType) return '—'
+  if (!resultType) return 'â€”'
   if (resultType === 'WIN' && resultMargin && resultMarginType)
     return `Won by ${resultMargin} ${resultMarginType === 'RUNS' ? 'runs' : 'wickets'}`
   if (resultType === 'LOSS' && resultMargin && resultMarginType)

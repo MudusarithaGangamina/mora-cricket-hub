@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
 
-// ── Public pages ──────────────────────────────────────────────────────────────
+// â”€â”€ Public pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import HomePage           from '@/pages/public/HomePage'
 import MatchesPage        from '@/pages/public/MatchesPage'
 import MatchDetailPage    from '@/pages/public/MatchDetailPage'
@@ -15,13 +15,13 @@ import RecordsPage        from '@/pages/public/RecordsPage'
 import CaptaincyPage      from '@/pages/public/CaptaincyPage'
 import HeadToHeadPage     from '@/pages/public/HeadToHeadPage'
 
-// ── Admin pages ───────────────────────────────────────────────────────────────
+// â”€â”€ Admin pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import AdminDashboardPage    from '@/pages/admin/AdminDashboardPage'
 import CreateMatchPage       from '@/pages/admin/matches/CreateMatchPage'
 import MatchEntryPage        from '@/pages/admin/matches/MatchEntryPage'
 import CreateEditPlayerPage  from '@/pages/admin/players/CreateEditPlayerPage'
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import LoginPage from '@/pages/LoginPage'
 
 const queryClient = new QueryClient({
@@ -53,7 +53,7 @@ export default function App() {
           {/* Auth */}
           <Route path="/login"           element={<LoginPage />} />
 
-          {/* Admin — protected */}
+          {/* Admin â€” protected */}
           <Route element={<ProtectedRoute requiredRole="Admin" />}>
             <Route path="/admin"                    element={<AdminDashboardPage />} />
             <Route path="/admin/matches/new"        element={<CreateMatchPage />} />

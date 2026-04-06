@@ -1,12 +1,12 @@
 import axios from 'axios'
 
-// .NET API — all writes, auth, standard stats
+// .NET API â€” all writes, auth, standard stats
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: { 'Content-Type': 'application/json' },
 })
 
-// FastAPI — read-only analytics
+// FastAPI â€” read-only analytics
 export const analyticsClient = axios.create({
   baseURL: import.meta.env.VITE_ANALYTICS_URL,
   headers: { 'Content-Type': 'application/json' },
