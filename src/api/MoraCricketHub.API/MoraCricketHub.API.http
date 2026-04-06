@@ -1,0 +1,6 @@
+@MoraCricketHub.API_HostAddress = http://localhost:5254
+
+GET {{MoraCricketHub.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
