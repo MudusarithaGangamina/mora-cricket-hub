@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
+    <Folder Include="Deliveries\Commands\" />
     <Folder Include="Innings\Commands\" />
     <Folder Include="Matches\Commands\" />
     <Folder Include="Matches\Queries\" />
