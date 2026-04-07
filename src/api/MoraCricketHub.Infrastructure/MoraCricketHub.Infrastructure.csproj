@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <Folder Include="BackgroundJobs\" />
-    <Folder Include="Persistence\Configurations\" />
   </ItemGroup>
 
   <PropertyGroup>
