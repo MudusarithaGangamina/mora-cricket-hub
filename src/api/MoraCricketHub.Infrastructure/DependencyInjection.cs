@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MoraCricketHub.Application.Opponents.Interfaces;
 using MoraCricketHub.Application.Players.Interfaces;
+using MoraCricketHub.Application.Seasons.Interfaces;
+using MoraCricketHub.Application.Tournaments.Interfaces;
+using MoraCricketHub.Application.Venues.Interfaces;
 using MoraCricketHub.Infrastructure.Persistence;
 using MoraCricketHub.Infrastructure.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace MoraCricketHub.Infrastructure;
 
@@ -25,6 +29,10 @@ public static class DependencyInjection
 
         // Repositories — add every new one here as you build them
         services.AddScoped<IPlayerRepository, PlayerRepository>();
+        services.AddScoped<ISeasonRepository, SeasonRepository>();
+        services.AddScoped<ITournamentRepository, TournamentRepository>();
+        services.AddScoped<IVenueRepository, VenueRepository>();
+        services.AddScoped<IOpponentRepository, OpponentRepository>();
 
         return services;
     }
