@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MoraCricketHub.Application.Innings.Interfaces;
 using MoraCricketHub.Application.Matches.Interfaces;
 using MoraCricketHub.Application.Opponents.Interfaces;
 using MoraCricketHub.Application.Players.Interfaces;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IOpponentRepository, OpponentRepository>();
         services.AddScoped<IMatchRepository, MatchRepository>();
+        services.AddScoped<IInningsRepository, InningsRepository>();
 
         return services;
     }
