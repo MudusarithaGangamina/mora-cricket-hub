@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="Deliveries\Commands\" />
-    <Folder Include="Innings\Commands\" />
   </ItemGroup>
 
   <PropertyGroup>
