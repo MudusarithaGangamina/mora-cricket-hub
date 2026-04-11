@@ -13,4 +13,6 @@ public interface IMatchRepository
     Task<Match?> FindByIdAsync(Guid id, CancellationToken ct);
     Task<Guid> CreateAsync(Match match, CancellationToken ct);
     Task<bool> UpdateAsync(Match match, CancellationToken ct);
+    Task<bool> SetSquadAsync(Guid matchId, List<Guid> playerIds, CancellationToken ct);
+    Task<List<SquadMemberDto>> GetSquadAsync(Guid matchId, CancellationToken ct);
 }

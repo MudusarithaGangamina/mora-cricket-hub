@@ -27,3 +27,35 @@ public class GetMatchByIdHandler
         GetMatchByIdQuery request, CancellationToken ct)
         => _repo.GetByIdAsync(request.MatchId, ct);
 }
+
+public class GetMatchSquadQueryHandler : IRequestHandler<GetMatchSquadQuery, List<SquadMemberDto>>
+{
+    private readonly IMatchRepository _matchRepository;
+
+    public GetMatchSquadQueryHandler(IMatchRepository matchRepository)
+    {
+        _matchRepository = matchRepository;
+    }
+
+    public async Task<List<SquadMemberDto>> Handle(
+        GetMatchSquadQuery request,
+        CancellationToken cancellationToken)
+    {
+        return await _matchRepository.GetSquadAsync(request.MatchId, cancellationToken);
+    }
+}
+
+public class SetSquadCommandHandler : IRequestHandler<SetSquadCommand, bool>
+{
+    private readonly IMatchRepository _matchRepository;
+
+    public SetSquadCommandHandler(IMatchRepository matchRepository)
+    {
+        _matchRepository = matchRepository;
+    }
+
+    public async Task<bool> Handle(SetSquadCommand request, CancellationToken cancellationToken)
+    {
+        return await _matchRepository.SetSquadAsync(request.MatchId, request.PlayerIds, cancellationToken);
+    }
+}

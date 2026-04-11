@@ -108,4 +108,18 @@ public record PagedMatchesDto(
     int PageSize
 );
 
+public record SquadMemberDto(
+    Guid PlayerId,
+    string FullName,
+    string ShortName,
+    string BattingStyle,
+    string? PrimaryBowlingStyle,
+    bool IsPlayingXi
+);
+
+public record SetSquadCommand(
+    Guid MatchId,
+    List<Guid> PlayerIds   // All XI players
+) : IRequest<bool>;
+public record GetMatchSquadQuery(Guid MatchId) : IRequest<List<SquadMemberDto>>;
 public record GetMatchByIdQuery(Guid MatchId) : IRequest<MatchDetailDto?>;

@@ -85,4 +85,26 @@ public class MatchesController : ControllerBase
             });
         }
     }
+
+    // GET /api/matches/{id}/squad
+    [HttpGet("{id:guid}/squad")]
+    public async Task<IActionResult> GetSquad(
+        Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetMatchSquadQuery(id), ct);
+        return Ok(result);
+    }
+
+    // POST /api/matches/{id}/squad
+    [HttpPost("{id:guid}/squad")]
+    public async Task<IActionResult> SetSquad(
+        Guid id,
+        [FromBody] SetSquadCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.MatchId)
+            return BadRequest(new { message = "Id mismatch." });
+        await _mediator.Send(command, ct);
+        return NoContent();
+    }
 }

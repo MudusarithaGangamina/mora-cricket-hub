@@ -136,6 +136,46 @@ public class MatchRepository : IMatchRepository
         return true;
     }
 
+    public async Task<List<SquadMemberDto>> GetSquadAsync(
+    Guid matchId, CancellationToken ct)
+    => await _db.MatchSquads
+        .Include(ms => ms.Player)
+        .Where(ms => ms.MatchId == matchId)
+        .Select(ms => new SquadMemberDto(
+            ms.PlayerId,
+            ms.Player.FullName,
+            ms.Player.ShortName,
+            ms.Player.BattingStyle.ToString(),
+            ms.Player.PrimaryBowlingStyle != null
+                ? ms.Player.PrimaryBowlingStyle.Value.ToString()
+                : null,
+            ms.IsPlayingXi))
+        .ToListAsync(ct);
+
+    public async Task<bool> SetSquadAsync(
+        Guid matchId, List<Guid> playerIds, CancellationToken ct)
+    {
+        // Remove existing squad entries for this match
+        var existing = await _db.MatchSquads
+            .Where(ms => ms.MatchId == matchId)
+            .ToListAsync(ct);
+        _db.MatchSquads.RemoveRange(existing);
+
+        // Add fresh entries
+        foreach (var pid in playerIds)
+        {
+            _db.MatchSquads.Add(new MatchSquad
+            {
+                MatchId = matchId,
+                PlayerId = pid,
+                IsPlayingXi = true,
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private static MatchSummaryDto ToSummary(Match m) => new(
