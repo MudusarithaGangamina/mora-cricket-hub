@@ -88,4 +88,14 @@ public class PlayersController : ControllerBase
             });
         }
     }
+
+    // GET /api/players/{id}/career-stats
+    [HttpGet("{id:guid}/career-stats")]
+    public async Task<IActionResult> GetCareerStats(
+        Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(
+            new GetPlayerCareerStatsQuery(id), ct);
+        return result is null ? NotFound() : Ok(result);
+    }
 }
