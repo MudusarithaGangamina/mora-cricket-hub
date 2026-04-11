@@ -8,6 +8,13 @@ interface Props {
 export function ProtectedRoute({ requiredRole = 'Player' }: Props) {
   const { isAuthenticated, user } = useAuthStore()
 
+  // TODO: Remove this development bypass when auth is implemented
+  const DEV_BYPASS = true
+  
+  if (DEV_BYPASS) {
+    return <Outlet />
+  }
+
   if (!isAuthenticated) return <Navigate to="/login" replace />
 
   if (requiredRole === 'Admin' && user?.role !== 'Admin')

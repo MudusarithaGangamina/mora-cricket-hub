@@ -10,6 +10,7 @@
 **/dist/
 **/.env.local
 **/.env.production
+src/web/.env*
 
 # ── Python ────────────────────────────────────
 **/__pycache__/
