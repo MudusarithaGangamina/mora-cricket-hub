@@ -98,4 +98,27 @@ public class PlayersController : ControllerBase
             new GetPlayerCareerStatsQuery(id), ct);
         return result is null ? NotFound() : Ok(result);
     }
+
+    // GET /api/players/lookup  — returns minimal data for dropdowns
+    [HttpGet("lookup")]
+    public async Task<IActionResult> Lookup(
+        [FromQuery] bool activeOnly = true,
+        CancellationToken ct = default)
+    {
+        var players = await _mediator.Send(
+            new GetAllPlayersQuery(activeOnly), ct);
+
+        // Return only what the frontend dropdown needs
+        return Ok(players.Select(p => new
+        {
+            p.Id,
+            p.FullName,
+            p.ShortName,
+            p.Nickname,
+            p.BatchYear,
+            p.BattingStyle,
+            p.PrimaryBowlingStyle,
+        }));
+    }
+
 }
