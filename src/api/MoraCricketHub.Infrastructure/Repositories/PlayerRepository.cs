@@ -103,4 +103,126 @@ public class PlayerRepository : IPlayerRepository
         await _db.SaveChangesAsync(cancellationToken);
         return true;
     }
+
+    public async Task<CareerStatsDto?> GetCareerStatsAsync(
+    Guid playerId, CancellationToken ct)
+    {
+        var player = await _db.Players
+            .FirstOrDefaultAsync(p => p.Id == playerId, ct);
+
+        if (player is null) return null;
+
+        // Exclude PRE_TOSS_ABANDONED matches always
+        var battingPerfs = await _db.MoraBattingPerformances
+            .Include(p => p.Innings)
+                .ThenInclude(i => i.Match)
+            .Where(p => p.PlayerId == playerId
+                     && p.Innings.Match.Status != Domain.Enums.MatchStatus.PreTossAbandoned
+                     && p.DismissalType != "DNB")
+            .ToListAsync(ct);
+
+        var bowlingPerfs = await _db.MoraBowlingPerformances
+            .Include(p => p.Innings)
+                .ThenInclude(i => i.Match)
+            .Where(p => p.PlayerId == playerId
+                     && p.Innings.Match.Status != Domain.Enums.MatchStatus.PreTossAbandoned)
+            .ToListAsync(ct);
+
+        var fieldingPerfs = await _db.MoraFieldingPerformances
+            .Include(p => p.Innings)
+                .ThenInclude(i => i.Match)
+            .Where(p => p.PlayerId == playerId
+                     && p.Innings.Match.Status != Domain.Enums.MatchStatus.PreTossAbandoned)
+            .ToListAsync(ct);
+
+        // Batting stats
+        var battingMatches = battingPerfs
+            .Select(p => p.Innings.MatchId).Distinct().Count();
+        var innings = battingPerfs.Count;
+        var notOuts = battingPerfs.Count(p => p.IsNotOut);
+        var dismissed = innings - notOuts;
+        var totalRuns = battingPerfs.Sum(p => p.Runs);
+        var totalBalls = battingPerfs.Sum(p => p.BallsFaced);
+        var highScorePerf = battingPerfs.MaxBy(p => p.Runs);
+
+        var batting = new BattingCareerDto(
+            Matches: battingMatches,
+            Innings: innings,
+            NotOuts: notOuts,
+            Runs: totalRuns,
+            HighScore: highScorePerf?.Runs ?? 0,
+            HighScoreNotOut: highScorePerf?.IsNotOut ?? false,
+            Average: dismissed > 0
+                               ? Math.Round((decimal)totalRuns / dismissed, 2)
+                               : null,
+            StrikeRate: totalBalls > 0
+                               ? Math.Round((decimal)totalRuns / totalBalls * 100, 2)
+                               : 0,
+            Hundreds: battingPerfs.Count(p => p.IsHundred),
+            Fifties: battingPerfs.Count(p => p.IsFifty),
+            Thirties: battingPerfs.Count(p => p.IsThirty),
+            Ducks: battingPerfs.Count(p => p.IsDuck),
+            Fours: battingPerfs.Sum(p => p.Fours),
+            Sixes: battingPerfs.Sum(p => p.Sixes)
+        );
+
+        // Bowling stats
+        var bowlingMatches = bowlingPerfs
+            .Select(p => p.Innings.MatchId).Distinct().Count();
+        var totalOvers = bowlingPerfs.Sum(p => p.OversBowled);
+        var totalBallsBowled = bowlingPerfs.Sum(p =>
+            (int)Math.Floor(p.OversBowled) * 6 +
+            (int)Math.Round((p.OversBowled - Math.Floor(p.OversBowled)) * 10));
+        var totalRunsConceded = bowlingPerfs.Sum(p => p.RunsConceded);
+        var totalWickets = bowlingPerfs.Sum(p => p.Wickets);
+
+        var bowling = new BowlingCareerDto(
+            Matches: bowlingMatches,
+            Innings: bowlingPerfs.Count,
+            OversBowled: totalOvers,
+            Maidens: bowlingPerfs.Sum(p => p.Maidens),
+            RunsConceded: totalRunsConceded,
+            Wickets: totalWickets,
+            Average: totalWickets > 0
+                               ? Math.Round((decimal)totalRunsConceded / totalWickets, 2)
+                               : null,
+            Economy: totalOvers > 0
+                               ? Math.Round((decimal)totalRunsConceded / (decimal)totalOvers, 2)
+                               : 0,
+            StrikeRate: totalWickets > 0
+                               ? Math.Round((decimal)totalBallsBowled / totalWickets, 2)
+                               : null,
+            FourWicketHauls: bowlingPerfs.Count(p => p.IsFourWicketHaul),
+            FiveWicketHauls: bowlingPerfs.Count(p => p.IsFiveWicketHaul)
+        );
+
+        // Fielding stats
+        var fieldingMatches = fieldingPerfs
+            .Select(p => p.Innings.MatchId).Distinct().Count();
+
+        var fielding = new FieldingCareerDto(
+            Matches: fieldingMatches,
+            Catches: fieldingPerfs.Sum(p => p.Catches),
+            RunOuts: fieldingPerfs.Sum(p => p.RunOuts),
+            Stumpings: fieldingPerfs.Sum(p => p.Stumpings)
+        );
+
+        return new CareerStatsDto(
+            player.Id,
+            player.FullName,
+            player.ShortName,
+            player.Nickname,
+            player.PhotoUrl,
+            player.Faculty,
+            player.Degree,
+            player.BatchYear,
+            player.BattingStyle.ToString(),
+            player.PrimaryBowlingStyle?.ToString(),
+            player.DebutDate?.ToString("yyyy-MM-dd"),
+            player.IsActive,
+            batting,
+            bowling,
+            fielding
+        );
+    }
 }

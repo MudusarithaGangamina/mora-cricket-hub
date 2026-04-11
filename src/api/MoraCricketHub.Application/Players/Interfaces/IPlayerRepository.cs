@@ -22,4 +22,7 @@ public interface IPlayerRepository
 
     Task<Player?> FindByIdAsync(
         Guid id, CancellationToken cancellationToken);
+
+    Task<CareerStatsDto?> GetCareerStatsAsync(
+        Guid playerId, CancellationToken cancellationToken);
 }
