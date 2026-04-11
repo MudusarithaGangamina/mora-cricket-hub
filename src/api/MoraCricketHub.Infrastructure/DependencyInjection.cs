@@ -9,6 +9,7 @@ using MoraCricketHub.Application.Players.Interfaces;
 using MoraCricketHub.Application.Seasons.Interfaces;
 using MoraCricketHub.Application.Tournaments.Interfaces;
 using MoraCricketHub.Application.Venues.Interfaces;
+using MoraCricketHub.Application.Dashboard.Interfaces;
 using MoraCricketHub.Infrastructure.Persistence;
 using MoraCricketHub.Infrastructure.Repositories;
 using System;
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IMatchRepository, MatchRepository>();
         services.AddScoped<IInningsRepository, InningsRepository>();
         services.AddScoped<IDeliveryRepository, DeliveryRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
 
         return services;
     }
