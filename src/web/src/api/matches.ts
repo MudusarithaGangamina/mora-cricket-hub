@@ -20,7 +20,69 @@ export interface MatchSummary {
   dlsApplied: boolean
   moraCaptainName: string | null
   playerOfMatchName: string | null
+  playerOfMatchTeam: string | null
   scheduledOvers: number
+}
+
+export interface SquadMember {
+  playerId: string
+  fullName: string  // we'll add this to the .NET response
+  shortName: string
+  isPlayingXi: boolean
+  battingStyle?: string
+  primaryBowlingStyle?: string
+}
+
+export interface MatchDetail {
+  id: string
+  matchDate: string
+  tournamentId: string
+  tournamentName: string
+  tournamentFormat: string
+  oversPerSide: number
+  seasonName: string
+  opponentId: string
+  opponentName: string
+  opponentShortName: string
+  venueId: string | null
+  venueName: string | null
+  venueCity: string | null
+  venueType: string
+  surfaceType: string
+  ballColour: string
+  ballType: string
+  roundType: string
+  roundLabel: string | null
+  tossHeld: boolean
+  tossWinner: string | null
+  tossDecision: string | null
+  moraBattingFirst: boolean | null
+  status: string
+  resultType: string | null
+  resultMargin: number | null
+  resultMarginType: string | null
+  dlsApplied: boolean
+  dlsTarget: number | null
+  revisedOvers: number | null
+  moraCaptainId: string | null
+  moraCaptainName: string | null
+  moraWickeeperId: string | null
+  moraWickeeperName: string | null
+  opponentCaptainName: string | null
+  playerOfMatchMoraId: string | null
+  playerOfMatchName: string | null
+  playerOfMatchTeam: string | null
+  notes: string | null
+  scheduledOvers: number
+  innings: any[]
+  squad: SquadMember[]
+}
+
+export interface PagedMatches {
+  items: MatchSummary[]
+  totalCount: number
+  page: number
+  pageSize: number
 }
 
 export interface CreateMatchData {
@@ -57,22 +119,37 @@ export interface CreateMatchData {
 
 export const matchesApi = {
   getAll: (params?: {
-    tournamentId?: string; opponentId?: string
-    season?: string; page?: number; pageSize?: number
-  }) => apiClient.get('/api/matches', { params }).then(r => r.data),
+    tournamentId?: string
+    opponentId?: string
+    season?: string
+    page?: number
+    pageSize?: number
+  }) =>
+    apiClient
+      .get<PagedMatches>('/api/matches', { params })
+      .then(r => r.data),
 
   getById: (id: string) =>
-    apiClient.get(`/api/matches/${id}`).then(r => r.data),
+    apiClient
+      .get<MatchDetail>(`/api/matches/${id}`)
+      .then(r => r.data),
 
   create: (data: CreateMatchData) =>
-    apiClient.post<{ id: string }>('/api/matches', data).then(r => r.data),
+    apiClient
+      .post<{ id: string }>('/api/matches', data)
+      .then(r => r.data),
 
   updateResult: (id: string, data: object) =>
     apiClient.patch(`/api/matches/${id}/result`, { matchId: id, ...data }),
 
   getSquad: (id: string) =>
-    apiClient.get(`/api/matches/${id}/squad`).then(r => r.data),
+    apiClient
+      .get<SquadMember[]>(`/api/matches/${id}/squad`)
+      .then(r => r.data),
 
   setSquad: (id: string, playerIds: string[]) =>
-    apiClient.post(`/api/matches/${id}/squad`, { matchId: id, playerIds }),
+    apiClient.post(`/api/matches/${id}/squad`, {
+      matchId: id,
+      playerIds,
+    }),
 }
