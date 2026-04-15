@@ -1,47 +1,110 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { matchesApi, type SquadMember } from '@/api/matches'
+import {
+  matchesApi,
+  type SquadMember,
+  type OpponentSquadMember,
+  type SetOpponentSquadEntry,
+} from '@/api/matches'
 import { usePlayersLookup } from '@/hooks/usePlayers'
 import { useOpponent } from '@/hooks/useOpponents'
 import { BatchBadge } from '@/components/shared/BatchBadge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { BowlingStyleLabels } from '@/types/enums'
 import { clsx } from 'clsx'
 
 interface Props {
-  matchId: string
+  matchId:    string
   opponentId: string
 }
+
+// Empty row for the free-text opponent XI form
+const emptyRow = (): SetOpponentSquadEntry => ({
+  opponentPlayerId: null,
+  playerName:       '',
+  battingStyle:     null,
+  bowlingStyle:     null,
+  battingOrder:     null,
+})
 
 export function SquadTab({ matchId, opponentId }: Props) {
   const qc = useQueryClient()
 
-  const { data: currentSquad = [], isLoading: squadLoading } = useQuery({
-    queryKey: ['squad', matchId],
-    queryFn:  () => matchesApi.getSquad(matchId),
-  })
+  // ── Load existing squads from server ──────────────────────────────────────
+  const { data: currentMoraSquad = [], isLoading: moraLoading } =
+    useQuery<SquadMember[]>({
+      queryKey: ['squad', matchId],
+      queryFn:  () => matchesApi.getSquad(matchId),
+    })
+
+  const { data: currentOppSquad = [], isLoading: oppSquadLoading } =
+    useQuery<OpponentSquadMember[]>({
+      queryKey: ['opp-squad', matchId],
+      queryFn:  () => matchesApi.getOpponentSquad(matchId),
+    })
 
   const { data: players }  = usePlayersLookup()
   const { data: opponent } = useOpponent(opponentId)
 
-  // ── Mora XI ───────────────────────────────────────────────────────────────
+  // ── Mora XI state — pre-populated from server ─────────────────────────────
   const [selectedMoraIds, setSelectedMoraIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    if (currentSquad.length > 0) {
+    if (currentMoraSquad.length > 0) {
       setSelectedMoraIds(
-        new Set(currentSquad.map((s: SquadMember) => s.playerId))
+        new Set(currentMoraSquad.map(s => s.playerId))
       )
     }
-  }, [currentSquad])
+  }, [currentMoraSquad])
 
-  // ── Opponent XI ───────────────────────────────────────────────────────────
+  // ── Opponent XI state — mix of registered + free-text ────────────────────
+  // Registered players selected from opponent registry
   const [selectedOppIds, setSelectedOppIds] = useState<Set<string>>(new Set())
-  const [oppFreeText, setOppFreeText] = useState<string[]>(Array(11).fill(''))
 
+  // Free-text rows for unregistered players (11 rows)
+  const [oppRows, setOppRows] = useState<SetOpponentSquadEntry[]>(
+    Array.from({ length: 11 }, emptyRow)
+  )
+
+  // Pre-populate opponent squad from server on load
+  useEffect(() => {
+    if (currentOppSquad.length === 0) return
+
+    const registered = new Set<string>()
+    const freeRows: SetOpponentSquadEntry[] = Array.from(
+      { length: 11 }, emptyRow
+    )
+    let freeIndex = 0
+
+    for (const entry of currentOppSquad) {
+      if (entry.opponentPlayerId) {
+        registered.add(entry.opponentPlayerId)
+      } else if (freeIndex < 11) {
+        freeRows[freeIndex] = {
+          opponentPlayerId: null,
+          playerName:       entry.playerName,
+          battingStyle:     entry.battingStyle,
+          bowlingStyle:     entry.bowlingStyle,
+          battingOrder:     entry.battingOrder,
+        }
+        freeIndex++
+      }
+    }
+
+    setSelectedOppIds(registered)
+    setOppRows(freeRows)
+  }, [currentOppSquad])
+
+  // ── Save states ───────────────────────────────────────────────────────────
   const [moraSaving, setMoraSaving] = useState(false)
-  const [moraError,  setMoraError]  = useState('')
   const [moraSaved,  setMoraSaved]  = useState(false)
+  const [moraError,  setMoraError]  = useState('')
 
+  const [oppSaving,  setOppSaving]  = useState(false)
+  const [oppSaved,   setOppSaved]   = useState(false)
+  const [oppError,   setOppError]   = useState('')
+
+  // ── Toggle Mora player ────────────────────────────────────────────────────
   const toggleMora = (id: string) => {
     setSelectedMoraIds(prev => {
       const next = new Set(prev)
@@ -56,18 +119,7 @@ export function SquadTab({ matchId, opponentId }: Props) {
     setMoraSaved(false)
   }
 
-  const toggleOpp = (id: string) => {
-    setSelectedOppIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
+  // ── Save Mora XI ──────────────────────────────────────────────────────────
   const saveMoraSquad = async () => {
     setMoraSaving(true)
     setMoraError('')
@@ -83,6 +135,66 @@ export function SquadTab({ matchId, opponentId }: Props) {
     }
   }
 
+  // ── Save Opponent XI ──────────────────────────────────────────────────────
+  const saveOppSquad = async () => {
+    setOppSaving(true)
+    setOppError('')
+    try {
+      // Build entries from registered + free-text
+      const entries: SetOpponentSquadEntry[] = []
+
+      // Registered players
+      if (opponent) {
+        for (const p of opponent.players) {
+          if (selectedOppIds.has(p.id)) {
+            entries.push({
+              opponentPlayerId: p.id,
+              playerName:       p.fullName,
+              battingStyle:     p.battingStyle ?? null,
+              bowlingStyle:     p.bowlingStyle ?? null,
+              battingOrder:     null,
+            })
+          }
+        }
+      }
+
+      // Free-text rows (skip blank ones)
+      for (let i = 0; i < oppRows.length; i++) {
+        const row = oppRows[i]
+        if (row.playerName.trim()) {
+          entries.push({
+            ...row,
+            playerName:  row.playerName.trim(),
+            battingOrder: i + 1 + entries.length,
+          })
+        }
+      }
+
+      await matchesApi.setOpponentSquad(matchId, entries)
+      qc.invalidateQueries({ queryKey: ['opp-squad', matchId] })
+      setOppSaved(true)
+      setTimeout(() => setOppSaved(false), 3000)
+    } catch {
+      setOppError('Failed to save opponent squad.')
+    } finally {
+      setOppSaving(false)
+    }
+  }
+
+  // ── Update a free-text row field ──────────────────────────────────────────
+  const updateRow = (
+    index: number,
+    field: keyof SetOpponentSquadEntry,
+    value: string | null
+  ) => {
+    setOppRows(prev => {
+      const next = [...prev]
+      next[index] = { ...next[index], [field]: value }
+      return next
+    })
+    setOppSaved(false)
+  }
+
   // Group Mora players by batch
   const byBatch: Record<number, NonNullable<typeof players>> = {}
   if (players) {
@@ -92,29 +204,26 @@ export function SquadTab({ matchId, opponentId }: Props) {
     }
   }
 
-  if (squadLoading) return <LoadingSpinner />
+  if (moraLoading || oppSquadLoading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
 
-      {/* ── Mora XI ─────────────────────────────────────────────────────── */}
+      {/* ═══════════════════════ MORA XI ═══════════════════════════════════ */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-semibold text-white text-lg">
-              Mora Playing XI
-            </h3>
+            <h3 className="font-semibold text-white text-lg">Mora Playing XI</h3>
             <p className="text-slate-400 text-sm mt-0.5">
               Select exactly 11.{' '}
               <span className={clsx(
                 'font-semibold',
                 selectedMoraIds.size === 11 ? 'text-green-400' : 'text-amber-400'
               )}>
-                {selectedMoraIds.size}/11
+                {selectedMoraIds.size}/11 selected
               </span>
             </p>
           </div>
-
           <button
             onClick={saveMoraSquad}
             disabled={moraSaving || selectedMoraIds.size === 0}
@@ -126,7 +235,7 @@ export function SquadTab({ matchId, opponentId }: Props) {
                 : 'bg-blue-600 hover:bg-blue-500 text-white'
             )}
           >
-            {moraSaving ? 'Saving...' : moraSaved ? '✓ Saved' : 'Save XI'}
+            {moraSaving ? 'Saving...' : moraSaved ? '✓ Saved' : 'Save Mora XI'}
           </button>
         </div>
 
@@ -134,7 +243,6 @@ export function SquadTab({ matchId, opponentId }: Props) {
           <p className="text-red-400 text-sm mb-3">{moraError}</p>
         )}
 
-        {/* Player grid grouped by batch */}
         <div className="space-y-5">
           {Object.entries(byBatch)
             .sort(([a], [b]) => Number(a) - Number(b))
@@ -151,7 +259,6 @@ export function SquadTab({ matchId, opponentId }: Props) {
                       const pos = sel
                         ? Array.from(selectedMoraIds).indexOf(p.id) + 1
                         : null
-
                       return (
                         <button
                           key={p.id}
@@ -193,7 +300,6 @@ export function SquadTab({ matchId, opponentId }: Props) {
             ))}
         </div>
 
-        {/* Selected XI summary */}
         {selectedMoraIds.size > 0 && (
           <div className="mt-4 bg-slate-800/40 border border-slate-700/40
                           rounded-xl p-4">
@@ -206,14 +312,11 @@ export function SquadTab({ matchId, opponentId }: Props) {
                 const p = players?.find(x => x.id === id)
                 return (
                   <div key={id} className="flex items-center gap-2 text-sm">
-                    <span className="text-slate-500 w-5 shrink-0">
-                      {i + 1}.
-                    </span>
+                    <span className="text-slate-500 w-5 shrink-0">{i + 1}.</span>
                     <span className="text-white">{p?.fullName ?? id}</span>
                     <span className="text-slate-500 text-xs">
                       {p?.battingStyle}
-                      {p?.primaryBowlingStyle
-                        ? ` ${p.primaryBowlingStyle}` : ''}
+                      {p?.primaryBowlingStyle ? ` ${p.primaryBowlingStyle}` : ''}
                     </span>
                   </div>
                 )
@@ -223,24 +326,49 @@ export function SquadTab({ matchId, opponentId }: Props) {
         )}
       </section>
 
-      {/* ── Opponent XI ──────────────────────────────────────────────────── */}
+      {/* ══════════════════════ OPPONENT XI ════════════════════════════════ */}
       <section>
-        <h3 className="font-semibold text-white text-lg mb-1">
-          {opponent?.name ?? 'Opponent'} Playing XI
-        </h3>
-        <p className="text-slate-400 text-sm mb-4">
-          Select registered players who played, and add any unregistered ones
-          by name. Bowling styles here enable analytics.
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-white text-lg">
+              {opponent?.name ?? 'Opponent'} Playing XI
+            </h3>
+            <p className="text-slate-400 text-sm mt-0.5">
+              Select registered players and add any unregistered ones by name.
+              Bowling styles enable analytics.
+            </p>
+          </div>
+          <button
+            onClick={saveOppSquad}
+            disabled={oppSaving}
+            className={clsx(
+              'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              oppSaved
+                ? 'bg-green-700 text-white'
+                : 'bg-red-700 hover:bg-red-600 text-white'
+            )}
+          >
+            {oppSaving
+              ? 'Saving...'
+              : oppSaved
+                ? '✓ Saved'
+                : 'Save Opponent XI'}
+          </button>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {oppError && (
+          <p className="text-red-400 text-sm mb-3">{oppError}</p>
+        )}
 
-          {/* Registered opponent players */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Registered players from the registry */}
           {opponent && opponent.players.length > 0 && (
             <div>
               <p className="text-xs text-slate-400 uppercase font-medium
-                            tracking-wide mb-2">
-                Registered Players
+                            tracking-wide mb-3">
+                From Player Registry
               </p>
               <div className="space-y-1.5">
                 {opponent.players.map(p => {
@@ -249,7 +377,15 @@ export function SquadTab({ matchId, opponentId }: Props) {
                     <button
                       key={p.id}
                       type="button"
-                      onClick={() => toggleOpp(p.id)}
+                      onClick={() => {
+                        setSelectedOppIds(prev => {
+                          const next = new Set(prev)
+                          if (next.has(p.id)) next.delete(p.id)
+                          else next.add(p.id)
+                          return next
+                        })
+                        setOppSaved(false)
+                      }}
                       className={clsx(
                         'w-full flex items-center gap-3 px-3 py-2 rounded-lg',
                         'border text-left text-sm transition-colors',
@@ -268,19 +404,13 @@ export function SquadTab({ matchId, opponentId }: Props) {
                       )}>
                         {sel ? '✓' : ''}
                       </span>
-                      <span className="flex-1 font-medium">
-                        {p.fullName}
-                      </span>
-                      <div className="flex gap-2 text-xs">
+                      <span className="flex-1 font-medium">{p.fullName}</span>
+                      <div className="flex gap-2 text-xs shrink-0">
                         {p.battingStyle && (
-                          <span className="text-slate-400">
-                            {p.battingStyle}
-                          </span>
+                          <span className="text-slate-400">{p.battingStyle}</span>
                         )}
                         {p.bowlingStyle && (
-                          <span className="text-purple-400">
-                            {p.bowlingStyle}
-                          </span>
+                          <span className="text-purple-400">{p.bowlingStyle}</span>
                         )}
                       </div>
                     </button>
@@ -290,75 +420,86 @@ export function SquadTab({ matchId, opponentId }: Props) {
             </div>
           )}
 
-          {/* Free-text unregistered players */}
+          {/* Free-text rows for unregistered players */}
           <div>
             <p className="text-xs text-slate-400 uppercase font-medium
-                          tracking-wide mb-2">
-              Unregistered Players
-            </p>
-            <p className="text-xs text-slate-500 mb-3">
-              Type names for players not in the registry.
+                          tracking-wide mb-3">
+              Unregistered / Additional Players
             </p>
             <div className="space-y-2">
-              {oppFreeText.map((name, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-slate-500 text-xs w-5 shrink-0">
+              {oppRows.map((row, i) => (
+                <div key={i}
+                  className="grid grid-cols-12 gap-1.5 items-center">
+                  <span className="col-span-1 text-slate-500 text-xs text-right">
                     {i + 1}.
                   </span>
+                  {/* Name */}
                   <input
-                    value={name}
-                    onChange={e => {
-                      const next = [...oppFreeText]
-                      next[i] = e.target.value
-                      setOppFreeText(next)
-                    }}
-                    className="input-base w-full"
-                    placeholder={`Player ${i + 1}`}
+                    value={row.playerName}
+                    onChange={e => updateRow(i, 'playerName', e.target.value)}
+                    className="input-base col-span-4 text-xs py-1"
+                    placeholder="Name"
                   />
+                  {/* Batting style */}
+                  <select
+                    value={row.battingStyle ?? ''}
+                    onChange={e =>
+                      updateRow(i, 'battingStyle', e.target.value || null)}
+                    className="input-base col-span-3 text-xs py-1"
+                  >
+                    <option value="">Bat?</option>
+                    <option value="RHB">RHB</option>
+                    <option value="LHB">LHB</option>
+                  </select>
+                  {/* Bowling style */}
+                  <select
+                    value={row.bowlingStyle ?? ''}
+                    onChange={e =>
+                      updateRow(i, 'bowlingStyle', e.target.value || null)}
+                    className="input-base col-span-4 text-xs py-1"
+                  >
+                    <option value="">Bowl?</option>
+                    {Object.entries(BowlingStyleLabels).map(([val, label]) => (
+                      <option key={val} value={val}>{val} — {label}</option>
+                    ))}
+                  </select>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Opponent XI summary */}
-        {(selectedOppIds.size > 0 || oppFreeText.some(n => n.trim())) && (
+        {/* Current saved opponent squad preview */}
+        {currentOppSquad.length > 0 && (
           <div className="mt-4 bg-slate-800/40 border border-slate-700/40
                           rounded-xl p-4">
             <p className="text-xs text-slate-400 uppercase font-medium
                           tracking-wide mb-3">
-              Opponent XI Summary
+              Saved Opponent XI — will appear as autocomplete in delivery entry
             </p>
-            <div className="grid grid-cols-2 gap-1 text-sm">
-              {opponent?.players
-                .filter(p => selectedOppIds.has(p.id))
-                .map(p => (
-                  <div key={p.id}
-                    className="flex items-center gap-2">
-                    <span className="text-white">{p.fullName}</span>
-                    {p.bowlingStyle && (
-                      <span className="text-xs text-purple-400">
-                        {p.bowlingStyle}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              {oppFreeText
-                .filter(n => n.trim())
-                .map((name, i) => (
-                  <span key={`ft-${i}`} className="text-slate-300">
-                    {name}
-                  </span>
-                ))}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+              {currentOppSquad.map((p, i) => (
+                <div key={i}
+                  className="flex items-center gap-2 text-xs bg-slate-900/40
+                             rounded px-2 py-1.5">
+                  <span className="text-slate-500 shrink-0">{i + 1}.</span>
+                  <span className="text-white truncate">{p.playerName}</span>
+                  {p.battingStyle && (
+                    <span className="text-slate-500 shrink-0">
+                      {p.battingStyle}
+                    </span>
+                  )}
+                  {p.bowlingStyle && (
+                    <span className="text-purple-400 shrink-0">
+                      {p.bowlingStyle}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
-            <p className="text-xs text-slate-500 mt-3">
-              These are for reference during data entry. Opponent batter and
-              bowler names are entered per ball in the delivery entry tab.
-            </p>
           </div>
         )}
       </section>
-
     </div>
   )
 }

@@ -117,6 +117,22 @@ export interface CreateMatchData {
   notes?: string
 }
 
+export interface OpponentSquadMember {
+  opponentPlayerId: string | null
+  playerName: string
+  battingStyle: string | null
+  bowlingStyle: string | null
+  battingOrder: number | null
+}
+
+export interface SetOpponentSquadEntry {
+  opponentPlayerId: string | null
+  playerName: string
+  battingStyle: string | null
+  bowlingStyle: string | null
+  battingOrder: number | null
+}
+
 export const matchesApi = {
   getAll: (params?: {
     tournamentId?: string
@@ -152,4 +168,15 @@ export const matchesApi = {
       matchId: id,
       playerIds,
     }),
+
+    getOpponentSquad: (id: string) =>
+  apiClient
+    .get<OpponentSquadMember[]>(`/api/matches/${id}/opponent-squad`)
+    .then(r => r.data),
+
+setOpponentSquad: (id: string, entries: SetOpponentSquadEntry[]) =>
+  apiClient.post(`/api/matches/${id}/opponent-squad`, {
+    matchId: id,
+    entries,
+  }),
 }

@@ -57,3 +57,27 @@ public class SetSquadCommandHandler : IRequestHandler<SetSquadCommand, bool>
         =>_matchRepository.SetSquadAsync(request.MatchId, request.PlayerIds, cancellationToken);
     
 }
+
+public class SetOpponentSquadHandler
+    : IRequestHandler<SetOpponentSquadCommand, bool>
+{
+    private readonly IMatchRepository _repo;
+    public SetOpponentSquadHandler(IMatchRepository repo) => _repo = repo;
+
+    public Task<bool> Handle(SetOpponentSquadCommand r, CancellationToken ct)
+        => _repo.SetOpponentSquadAsync(r.MatchId, r.Entries, ct);
+}
+
+public record GetOpponentSquadQuery(Guid MatchId)
+    : IRequest<List<OpponentSquadMemberDto>>;
+
+public class GetOpponentSquadHandler
+    : IRequestHandler<GetOpponentSquadQuery, List<OpponentSquadMemberDto>>
+{
+    private readonly IMatchRepository _repo;
+    public GetOpponentSquadHandler(IMatchRepository repo) => _repo = repo;
+
+    public Task<List<OpponentSquadMemberDto>> Handle(
+        GetOpponentSquadQuery r, CancellationToken ct)
+        => _repo.GetOpponentSquadAsync(r.MatchId, ct);
+}

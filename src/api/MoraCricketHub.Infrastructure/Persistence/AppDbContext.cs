@@ -27,6 +27,7 @@ public class AppDbContext : DbContext
     // ── Matches ───────────────────────────────────────────────────────────────
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<MatchSquad> MatchSquads => Set<MatchSquad>();
+    public DbSet<MatchOpponentSquad> MatchOpponentSquads => Set<MatchOpponentSquad>();
 
     // ── Innings & deliveries ──────────────────────────────────────────────────
     public DbSet<Innings> Innings => Set<Innings>();

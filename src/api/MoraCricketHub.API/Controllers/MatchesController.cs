@@ -104,4 +104,25 @@ public class MatchesController : ControllerBase
         var success = await _mediator.Send(command, ct);
         return success ? NoContent() : NotFound();
     }
+
+    // GET /api/matches/{id}/opponent-squad
+    [HttpGet("{id:guid}/opponent-squad")]
+    public async Task<IActionResult> GetOpponentSquad(
+        Guid id, CancellationToken ct)
+        => Ok(await _mediator.Send(
+            new GetOpponentSquadQuery(id), ct));
+
+    // POST /api/matches/{id}/opponent-squad
+    [HttpPost("{id:guid}/opponent-squad")]
+    public async Task<IActionResult> SetOpponentSquad(
+        Guid id,
+        [FromBody] SetOpponentSquadCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.MatchId)
+            return BadRequest(new { message = "Id mismatch." });
+        await _mediator.Send(command, ct);
+        return NoContent();
+    }
+
 }
