@@ -1,18 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MoraCricketHub.Application.Deliveries.Interfaces;
 using MoraCricketHub.Application.Deliveries.Queries;
+using MoraCricketHub.Application.Innings.Interfaces;
 using MoraCricketHub.Domain.Entities;
 using MoraCricketHub.Infrastructure.Persistence;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace MoraCricketHub.Infrastructure.Repositories;
 
 public class DeliveryRepository : IDeliveryRepository
 {
     private readonly AppDbContext _db;
-    public DeliveryRepository(AppDbContext db) => _db = db;
+    private readonly IAutoEventService _autoEvents;
+
+    public DeliveryRepository(AppDbContext db, IAutoEventService autoEvents)
+    {
+        _db = db;
+        _autoEvents = autoEvents;
+    }
 
     // ── Queries ───────────────────────────────────────────────────────────────
 
@@ -71,10 +78,25 @@ public class DeliveryRepository : IDeliveryRepository
     // ── Commands ──────────────────────────────────────────────────────────────
 
     public async Task<Guid> AddDeliveryAsync(
-        Delivery delivery, CancellationToken ct)
+    Delivery delivery, CancellationToken ct)
     {
         _db.Deliveries.Add(delivery);
         await _db.SaveChangesAsync(ct);
+
+        // Load full innings object for event processing
+        var innings = await _db.Innings
+            .FirstOrDefaultAsync(i => i.Id == delivery.InningsId, ct);
+
+        if (innings is not null)
+        {
+            // Fire all automatic side effects
+            await _autoEvents.ProcessDeliveryAsync(delivery, innings, ct);
+
+            // Recompute over summary for worm chart
+            await RecomputeOverSummaryAsync(
+                delivery.InningsId, delivery.OverNumber, ct);
+        }
+
         return delivery.Id;
     }
 

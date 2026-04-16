@@ -1,5 +1,16 @@
 import { apiClient } from './client'
 
+export interface InningsEventDto {
+  id: string
+  eventType: string
+  atOver: number | null
+  teamScoreAtEvent: number | null
+  teamWicketsAtEvent: number | null
+  revisedOvers: number | null
+  description: string
+  playerId: string | null
+}
+
 export const inningsApi = {
   getScorecard: (id: string) =>
     apiClient.get(`/api/innings/${id}`).then(r => r.data),

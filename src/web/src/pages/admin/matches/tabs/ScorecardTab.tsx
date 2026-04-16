@@ -5,6 +5,8 @@ import { opponentsApi } from '@/api/opponents'
 import { useQuery } from '@tanstack/react-query'
 import { usePlayersLookup } from '@/hooks/usePlayers'
 import { FormField } from '@/components/shared/FormField'
+import { useInningsEvents } from '@/hooks/useInnings'
+import { InningsTimeline } from './delivery/InningsTimeline'
 
 interface Props {
   innings: any
@@ -264,6 +266,7 @@ export function ScorecardTab({ innings, matchId }: Props) {
             </div>
           </div>
         )}
+        <InningsEventsSection inningsId={innings.id} />
       </div>
 
       {/* Action buttons */}
@@ -581,6 +584,22 @@ export function ScorecardTab({ innings, matchId }: Props) {
           </button>
         </form>
       )}
+    </div>
+  )
+}
+
+function InningsEventsSection({ inningsId }: { inningsId: string }) {
+  const { data: events = [] } = useInningsEvents(inningsId)
+
+  if (events.length === 0) return null
+
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+      <p className="text-xs font-medium text-slate-400 uppercase
+                    tracking-wide mb-3">
+        Innings Timeline
+      </p>
+      <InningsTimeline events={events} />
     </div>
   )
 }

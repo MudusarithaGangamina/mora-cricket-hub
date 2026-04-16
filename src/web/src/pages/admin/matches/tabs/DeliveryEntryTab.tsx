@@ -145,6 +145,8 @@ export function DeliveryEntryTab({
       resetBall()
       setBowlingSide('')
       invalidateDeliveries()
+      qc.invalidateQueries({ queryKey: ['scorecard', innings.id] })
+      qc.invalidateQueries({ queryKey: ['innings-events', innings.id] })
 
     } catch (e: any) {
       setError(
@@ -192,6 +194,7 @@ export function DeliveryEntryTab({
         {/* Col 1: Live scorecard */}
         <div className="xl:col-span-1">
           <LiveScorecard
+            inningsId={innings.id}
             batterScores={batterScores}
             bowlerFigures={bowlerFigures}
             isMoraBatting={isMoraBatting}

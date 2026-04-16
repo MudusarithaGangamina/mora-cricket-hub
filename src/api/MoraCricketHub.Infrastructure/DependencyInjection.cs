@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MoraCricketHub.Application.Dashboard.Interfaces;
 using MoraCricketHub.Application.Deliveries.Interfaces;
 using MoraCricketHub.Application.Innings.Interfaces;
 using MoraCricketHub.Application.Matches.Interfaces;
@@ -9,9 +10,9 @@ using MoraCricketHub.Application.Players.Interfaces;
 using MoraCricketHub.Application.Seasons.Interfaces;
 using MoraCricketHub.Application.Tournaments.Interfaces;
 using MoraCricketHub.Application.Venues.Interfaces;
-using MoraCricketHub.Application.Dashboard.Interfaces;
 using MoraCricketHub.Infrastructure.Persistence;
 using MoraCricketHub.Infrastructure.Repositories;
+using MoraCricketHub.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -41,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IInningsRepository, InningsRepository>();
         services.AddScoped<IDeliveryRepository, DeliveryRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IAutoEventService, AutoEventService>();
 
         return services;
     }
