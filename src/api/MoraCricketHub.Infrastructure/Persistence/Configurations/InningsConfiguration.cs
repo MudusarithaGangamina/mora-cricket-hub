@@ -16,6 +16,7 @@ public class InningsConfiguration : IEntityTypeConfiguration<Innings>
         builder.Property(i => i.BattingTeam).HasConversion<string>();
         builder.Property(i => i.CommentaryCoverage).HasConversion<string>();
         builder.Property(i => i.TotalOversFaced).HasColumnType("decimal(4,1)");
+        builder.Property(i => i.EndedAtOver).HasColumnType("decimal(4,1)");
 
         builder.HasIndex(i => i.MatchId);
         builder.HasIndex(i => i.BattingTeam);

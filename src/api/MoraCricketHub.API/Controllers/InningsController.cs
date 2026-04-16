@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MoraCricketHub.Application.Innings.Commands;
+using MoraCricketHub.Application.Innings.Interfaces;
 using MoraCricketHub.Application.Innings.Queries;
 
 namespace MoraCricketHub.API.Controllers;
@@ -11,7 +12,13 @@ namespace MoraCricketHub.API.Controllers;
 public class InningsController : ControllerBase
 {
     private readonly IMediator _mediator;
-    public InningsController(IMediator mediator) => _mediator = mediator;
+    private readonly IInningsRepository _repo;
+
+    public InningsController(IMediator mediator, IInningsRepository repo)
+    {
+        _mediator = mediator;
+        _repo = repo;
+    }
 
     // ── GET scorecard for one innings ─────────────────────────────────────────
     [HttpGet("{id:guid}")]
@@ -225,6 +232,103 @@ public class InningsController : ControllerBase
         var success = await _mediator.Send(command, ct);
         return success ? NoContent() : NotFound();
     }
+
+    // ── PATCH update innings overs ────────────────────────────────────────────
+    [HttpPatch("{id:guid}/overs")]
+    public async Task<IActionResult> UpdateOvers(
+        Guid id,
+        [FromBody] UpdateInningsOversCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.InningsId)
+            return BadRequest(new { message = "Id mismatch." });
+        var success = await _mediator.Send(command, ct);
+        return success ? NoContent() : NotFound();
+    }
+
+    // ── PATCH complete innings ────────────────────────────────────────────────
+    [HttpPatch("{id:guid}/complete")]
+    public async Task<IActionResult> Complete(
+        Guid id,
+        [FromBody] CompleteInningsCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.InningsId)
+            return BadRequest(new { message = "Id mismatch." });
+        var success = await _mediator.Send(command, ct);
+        return success ? NoContent() : NotFound();
+    }
+
+    // ── PATCH confirm innings ─────────────────────────────────────────────────
+    [HttpPatch("{id:guid}/confirm")]
+    public async Task<IActionResult> Confirm(
+        Guid id,
+        CancellationToken ct)
+    {
+        var success = await _mediator.Send(
+            new ConfirmInningsCommand(id), ct);
+        return success ? NoContent() : NotFound();
+    }
+
+    // ── POST add innings event ────────────────────────────────────────────────
+    [HttpPost("{id:guid}/events")]
+    public async Task<IActionResult> AddEvent(
+        Guid id,
+        [FromBody] AddInningsEventCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.InningsId)
+            return BadRequest(new { message = "Id mismatch." });
+        var eventId = await _mediator.Send(command, ct);
+        return Created(string.Empty, new { id = eventId });
+    }
+
+    // ── GET innings events ────────────────────────────────────────────────────
+    [HttpGet("{id:guid}/events")]
+    public async Task<IActionResult> GetEvents(
+        Guid id,
+        CancellationToken ct)
+    {
+        var events = await _repo.GetInningsEventsAsync(id, ct);
+        return Ok(events.Select(e => new
+        {
+            e.Id,
+            e.EventType,
+            e.AtOver,
+            e.TeamScoreAtEvent,
+            e.TeamWicketsAtEvent,
+            e.RevisedOvers,
+            e.Description,
+            e.PlayerId,
+        }));
+    }
+
+    // ── PATCH change bowler mid-over ──────────────────────────────────────────
+    [HttpPatch("{id:guid}/change-bowler")]
+    public async Task<IActionResult> ChangeBowler(
+        Guid id,
+        [FromBody] ChangeBowlerMidOverCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.InningsId)
+            return BadRequest(new { message = "Id mismatch." });
+        var success = await _mediator.Send(command, ct);
+        return success ? NoContent() : NotFound();
+    }
+
+    // ── PATCH change keeper ───────────────────────────────────────────────────
+    [HttpPatch("{id:guid}/change-keeper")]
+    public async Task<IActionResult> ChangeKeeper(
+        Guid id,
+        [FromBody] ChangeKeeperCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.InningsId)
+            return BadRequest(new { message = "Id mismatch." });
+        var success = await _mediator.Send(command, ct);
+        return success ? NoContent() : NotFound();
+    }
+
 
     // ── Helper ────────────────────────────────────────────────────────────────
     private static object BuildErrors(ValidationException ex) => new

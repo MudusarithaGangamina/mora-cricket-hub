@@ -48,4 +48,13 @@ public class SeasonRepository : ISeasonRepository
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var season = await _db.Seasons.FirstOrDefaultAsync(s => s.Id == id, ct);
+        if (season is null) return false;
+        _db.Seasons.Remove(season);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 }

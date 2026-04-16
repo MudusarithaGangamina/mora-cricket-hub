@@ -11,3 +11,11 @@ export const useCreateVenue = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['venues'] }),
   })
 }
+
+export const useDeleteVenue = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => venuesApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['venues'] }),
+  })
+}

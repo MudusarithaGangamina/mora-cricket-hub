@@ -104,6 +104,15 @@ public class PlayerRepository : IPlayerRepository
         return true;
     }
 
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var player = await _db.Players.FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (player is null) return false;
+        _db.Players.Remove(player);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
     public async Task<CareerStatsDto?> GetCareerStatsAsync(
     Guid playerId, CancellationToken ct)
     {

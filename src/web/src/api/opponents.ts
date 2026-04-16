@@ -47,4 +47,10 @@ export const opponentsApi = {
   }) => apiClient.put(`/api/opponents/players/${playerId}`, {
     opponentPlayerId: playerId, ...data
   }),
+
+  delete: (id: string) =>
+    apiClient.delete(`/api/opponents/${id}`),
+
+  deletePlayer: (playerId: string) =>
+    apiClient.delete(`/api/opponents/players/${playerId}`),
 }

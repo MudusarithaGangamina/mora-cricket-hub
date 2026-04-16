@@ -26,3 +26,11 @@ export const useUpdateSeason = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['seasons'] }),
   })
 }
+
+export const useDeleteSeason = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => seasonsApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['seasons'] }),
+  })
+}

@@ -63,4 +63,8 @@ public interface IInningsRepository
         MoraFieldingPerformance perf, CancellationToken ct);
     Task<MoraFieldingPerformance?> FindMoraFieldingAsync(
         Guid id, CancellationToken ct);
+
+    // Add these to the existing interface:
+    Task<Guid> AddInningsEventAsync(InningsEvent ev, CancellationToken ct);
+    Task<List<InningsEvent>> GetInningsEventsAsync(Guid inningsId, CancellationToken ct);
 }

@@ -13,4 +13,5 @@ public interface IVenueRepository
     Task<Venue?> FindByIdAsync(Guid id, CancellationToken ct);
     Task<Guid> CreateAsync(Venue venue, CancellationToken ct);
     Task<bool> UpdateAsync(Venue venue, CancellationToken ct);
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct);
 }

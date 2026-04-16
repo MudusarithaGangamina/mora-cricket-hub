@@ -13,9 +13,11 @@ public interface IOpponentRepository
     Task<Opponent?> FindByIdAsync(Guid id, CancellationToken ct);
     Task<Guid> CreateAsync(Opponent opponent, CancellationToken ct);
     Task<bool> UpdateAsync(Opponent opponent, CancellationToken ct);
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct);
 
     // Opponent players
     Task<OpponentPlayer?> FindPlayerByIdAsync(Guid id, CancellationToken ct);
     Task<Guid> CreatePlayerAsync(OpponentPlayer player, CancellationToken ct);
     Task<bool> UpdatePlayerAsync(OpponentPlayer player, CancellationToken ct);
+    Task<bool> DeletePlayerAsync(Guid playerId, CancellationToken ct);
 }

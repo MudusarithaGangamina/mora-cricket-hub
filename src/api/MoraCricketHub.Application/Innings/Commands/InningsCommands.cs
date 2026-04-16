@@ -12,7 +12,8 @@ public record CreateInningsCommand(
     string InningsType,       // NORMAL | SUPER_OVER
     string BattingTeam,       // MORA | OPPONENT
     Guid? MoraWickeeperId,
-    string CommentaryCoverage // NONE | KEY | FULL
+    string CommentaryCoverage, // NONE | KEY | FULL
+    int scheduledOvers
 ) : IRequest<Guid>;
 
 // ── Update innings totals (scorecard aggregates) ──────────────────────────────

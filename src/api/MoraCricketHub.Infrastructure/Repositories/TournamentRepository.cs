@@ -54,4 +54,13 @@ public class TournamentRepository : ITournamentRepository
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var tournament = await _db.Tournaments.FirstOrDefaultAsync(t => t.Id == id, ct);
+        if (tournament is null) return false;
+        _db.Tournaments.Remove(tournament);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 }

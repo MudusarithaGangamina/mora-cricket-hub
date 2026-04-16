@@ -51,3 +51,14 @@ export const useUpdatePlayer = () => {
     },
   })
 }
+
+export const useDeletePlayer = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => playersApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['players'] })
+      qc.invalidateQueries({ queryKey: ['players-lookup'] })
+    },
+  })
+}

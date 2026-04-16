@@ -9,7 +9,7 @@ export const inningsApi = {
 
   create: (data: {
     matchId: string; inningsNumber: number; inningsType: string
-    battingTeam: string; moraWickeeperId?: string; commentaryCoverage: string
+    battingTeam: string; moraWickeeperId?: string; commentaryCoverage: string; scheduledOvers: number
   }) => apiClient.post<{ id: string }>('/api/innings', data).then(r => r.data),
 
   updateTotals: (id: string, data: {
@@ -44,4 +44,52 @@ export const inningsApi = {
 
   addFielding: (inningsId: string, data: object) =>
     apiClient.post(`/api/innings/${inningsId}/fielding`, data).then(r => r.data),
+
+  updateOvers: (id: string, data: {
+    maxOvers: number
+    target?: number
+  }) => apiClient.patch(`/api/innings/${id}/overs`, {
+    inningsId: id, ...data
+  }),
+
+  complete: (id: string, data: {
+    endedAtOver: number
+    reason: 'WICKETS' | 'OVERS' | 'TARGET' | 'MANUAL'
+  }) => apiClient.patch(`/api/innings/${id}/complete`, {
+    inningsId: id, ...data
+  }),
+
+  confirm: (id: string) =>
+    apiClient.patch(`/api/innings/${id}/confirm`),
+
+  getEvents: (id: string) =>
+    apiClient.get(`/api/innings/${id}/events`).then(r => r.data),
+
+  addEvent: (id: string, data: {
+    eventType: string
+    atOver?: number
+    teamScoreAtEvent?: number
+    teamWicketsAtEvent?: number
+    revisedOvers?: number
+    description: string
+    playerId?: string
+  }) => apiClient.post(`/api/innings/${id}/events`, {
+    inningsId: id, ...data
+  }).then(r => r.data),
+
+  changeBowler: (id: string, data: {
+    newBowlerId: string
+    overNumber: number
+    fromBallNumber: number
+  }) => apiClient.patch(`/api/innings/${id}/change-bowler`, {
+    inningsId: id, ...data
+  }),
+
+  changeKeeper: (id: string, data: {
+    newKeeperId: string
+    overNumber: number
+    ballNumber: number
+  }) => apiClient.patch(`/api/innings/${id}/change-keeper`, {
+    inningsId: id, ...data
+  }),
 }

@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom'
-import { usePlayers } from '@/hooks/usePlayers'
+import { usePlayers, useDeletePlayer } from '@/hooks/usePlayers'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { BatchBadge } from '@/components/shared/BatchBadge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { BowlingStyleLabels } from '@/types/enums'
+import { ConfirmDeleteButton } from '@/components/shared/ConfirmDeleteButton'
 
 export default function PlayerListPage() {
   const { data: players, isLoading } = usePlayers()
+  const deletePlayer = useDeletePlayer()
 
   if (isLoading) return <LoadingSpinner size="lg" />
 
@@ -81,12 +83,18 @@ export default function PlayerListPage() {
                 </div>
 
                 {/* Actions */}
-                <Link
+                <div className="flex items-center gap-3">
+                  <Link
                   to={`/admin/players/${p.id}/edit`}
                   className="text-sm text-slate-400 hover:text-white transition-colors shrink-0"
                 >
                   Edit
                 </Link>
+                <ConfirmDeleteButton
+                  onConfirm={() => deletePlayer.mutate(p.id)}
+                  itemName={p.fullName}
+                />
+              </div>
               </div>
             ))}
         </div>

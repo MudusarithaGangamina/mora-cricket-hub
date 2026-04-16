@@ -22,4 +22,7 @@ export const tournamentsApi = {
   update: (id: string, data: {
     seasonId: string; name: string; format: string; oversPerSide: number
   }) => apiClient.put(`/api/tournaments/${id}`, { tournamentId: id, ...data }),
+
+  delete: (id: string) =>
+    apiClient.delete(`/api/tournaments/${id}`),
 }

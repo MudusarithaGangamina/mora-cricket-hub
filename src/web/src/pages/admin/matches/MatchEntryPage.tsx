@@ -135,6 +135,7 @@ export default function MatchEntryPage() {
         <InningsSetupTab
           matchId={id!}
           existingInnings={scorecards ?? []}
+          matchScheduledOvers={match.scheduledOvers}
         />
       )}
       {tab === 'innings1-scorecard' && innings1 && (

@@ -14,3 +14,12 @@ export const useCreateTournament = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tournaments'] }),
   })
 }
+
+export const useDeleteTournament = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => tournamentsApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tournaments'] }),
+  })
+}
+

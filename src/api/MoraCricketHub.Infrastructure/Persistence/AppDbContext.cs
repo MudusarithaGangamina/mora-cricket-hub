@@ -33,6 +33,7 @@ public class AppDbContext : DbContext
     public DbSet<Innings> Innings => Set<Innings>();
     public DbSet<OverSummary> OverSummaries => Set<OverSummary>();
     public DbSet<Delivery> Deliveries => Set<Delivery>();
+    public DbSet<InningsEvent> InningsEvents => Set<InningsEvent>();
 
     // ── Performances ──────────────────────────────────────────────────────────
     public DbSet<MoraBattingPerformance> MoraBattingPerformances => Set<MoraBattingPerformance>();

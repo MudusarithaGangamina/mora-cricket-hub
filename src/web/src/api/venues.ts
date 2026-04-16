@@ -16,4 +16,7 @@ export const venuesApi = {
 
   update: (id: string, data: { name: string; city?: string; isMoraHomeGround: boolean }) =>
     apiClient.put(`/api/venues/${id}`, { venueId: id, ...data }),
+
+  delete: (id: string) =>
+    apiClient.delete(`/api/venues/${id}`),
 }

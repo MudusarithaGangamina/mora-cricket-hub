@@ -55,6 +55,14 @@ public class OpponentRepository : IOpponentRepository
         await _db.SaveChangesAsync(ct);
         return true;
     }
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var opponent = await _db.Opponents.FirstOrDefaultAsync(o => o.Id == id, ct);
+        if (opponent is null) return false;
+        _db.Opponents.Remove(opponent);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 
     public Task<OpponentPlayer?> FindPlayerByIdAsync(Guid id, CancellationToken ct)
         => _db.OpponentPlayers.FirstOrDefaultAsync(p => p.Id == id, ct);
@@ -69,6 +77,16 @@ public class OpponentRepository : IOpponentRepository
     public async Task<bool> UpdatePlayerAsync(OpponentPlayer player, CancellationToken ct)
     {
         _db.OpponentPlayers.Update(player);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<bool> DeletePlayerAsync(Guid playerId, CancellationToken ct)
+    {
+        var player = await _db.OpponentPlayers
+            .FirstOrDefaultAsync(p => p.Id == playerId, ct);
+        if (player is null) return false;
+        _db.OpponentPlayers.Remove(player);
         await _db.SaveChangesAsync(ct);
         return true;
     }

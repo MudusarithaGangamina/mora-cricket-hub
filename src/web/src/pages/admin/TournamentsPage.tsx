@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { useTournaments, useCreateTournament } from '@/hooks/useTournaments'
+import { useTournaments, useCreateTournament, useDeleteTournament } from '@/hooks/useTournaments'
 import { useSeasons } from '@/hooks/useSeasons'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FormField } from '@/components/shared/FormField'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { ConfirmDeleteButton } from '@/components/shared/ConfirmDeleteButton'
 
 export default function TournamentsPage() {
   const { data: tournaments, isLoading } = useTournaments()
   const { data: seasons }                = useSeasons()
   const createTournament                 = useCreateTournament()
+  const deleteTournamnet                 = useDeleteTournament()
 
   const [showForm, setShowForm] = useState(false)
   const [error, setError]       = useState('')
@@ -136,6 +138,12 @@ export default function TournamentsPage() {
                 <span className="text-slate-500 text-sm ml-3">
                   {t.seasonName} · {t.format} · {t.oversPerSide} ov
                 </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <ConfirmDeleteButton
+                  onConfirm={() => deleteTournamnet.mutate(t.id)}
+                  itemName={t.name}
+                />
               </div>
             </div>
           ))}

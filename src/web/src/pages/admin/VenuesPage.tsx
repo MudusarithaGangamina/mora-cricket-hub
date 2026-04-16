@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { useVenues, useCreateVenue } from '@/hooks/useVenues'
+import { useVenues, useCreateVenue, useDeleteVenue } from '@/hooks/useVenues'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FormField } from '@/components/shared/FormField'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ConfirmDeleteButton } from '@/components/shared/ConfirmDeleteButton'
 
 export default function VenuesPage() {
   const { data: venues } = useVenues()
   const createVenue      = useCreateVenue()
+  const deleteVenue      = useDeleteVenue()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     name: '', city: '', isMoraHomeGround: false
@@ -117,6 +119,12 @@ export default function VenuesPage() {
                   Home
                 </span>
               )}
+              <div className="flex items-center gap-3">
+                <ConfirmDeleteButton
+                  onConfirm={() => deleteVenue.mutate(v.id)}
+                  itemName={v.name}
+                />
+              </div>
             </div>
           ))}
         </div>

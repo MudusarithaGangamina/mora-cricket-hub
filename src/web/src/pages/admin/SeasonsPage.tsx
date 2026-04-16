@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useSeasons, useCreateSeason, useUpdateSeason } from '@/hooks/useSeasons'
+import { useSeasons, useCreateSeason, useUpdateSeason, useDeleteSeason } from '@/hooks/useSeasons'
 import type { Season } from '@/api/seasons'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { FormField } from '@/components/shared/FormField'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
+import { ConfirmDeleteButton } from '@/components/shared/ConfirmDeleteButton'
 
 interface SeasonForm {
   name: string
@@ -21,6 +22,7 @@ export default function SeasonsPage() {
   console.log('Is array:', Array.isArray(seasons))
   const createSeason = useCreateSeason()
   const updateSeason = useUpdateSeason()
+  const deleteSeason = useDeleteSeason()
 
   const [form, setForm]         = useState<SeasonForm>(empty)
   const [editing, setEditing]   = useState<string | null>(null)
@@ -154,12 +156,18 @@ export default function SeasonsPage() {
                   {s.endDate ? ` → ${s.endDate}` : ' → present'}
                 </span>
               </div>
-              <button
-                onClick={() => startEdit(s)}
-                className="text-sm text-slate-400 hover:text-white transition-colors"
-              >
-                Edit
-              </button>
+              <div className="flex items-center gap-3">
+  <button
+    onClick={() => startEdit(s)}
+    className="text-sm text-slate-400 hover:text-white transition-colors"
+  >
+    Edit
+  </button>
+  <ConfirmDeleteButton
+    onConfirm={() => deleteSeason.mutate(s.id)}
+    itemName={s.name}
+  />
+</div>
             </div>
           ))}
         </div>

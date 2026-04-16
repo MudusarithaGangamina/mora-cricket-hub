@@ -13,4 +13,5 @@ public interface ITournamentRepository
     Task<Tournament?> FindByIdAsync(Guid id, CancellationToken ct);
     Task<Guid> CreateAsync(Tournament tournament, CancellationToken ct);
     Task<bool> UpdateAsync(Tournament tournament, CancellationToken ct);
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct);
 }

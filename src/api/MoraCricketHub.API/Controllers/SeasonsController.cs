@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MoraCricketHub.Application.Common;
 using MoraCricketHub.Application.Seasons.Commands;
 using MoraCricketHub.Application.Seasons.Queries;
 
@@ -62,5 +63,12 @@ public class SeasonsController : ControllerBase
                 { field = e.PropertyName, message = e.ErrorMessage })
             });
         }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var success = await _mediator.Send(new DeleteSeasonCommand(id), ct);
+        return success ? NoContent() : NotFound();
     }
 }

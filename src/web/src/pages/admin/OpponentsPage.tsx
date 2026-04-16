@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { useOpponents, useCreateOpponent, useOpponent } from '@/hooks/useOpponents'
+import { useOpponents, useCreateOpponent, useOpponent, useDeleteOpponent, useDeleteOpponentPlayer } from '@/hooks/useOpponents'
 import { opponentsApi } from '@/api/opponents'
 import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { FormField } from '@/components/shared/FormField'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { BowlingStyleLabels } from '@/types/enums'
+import { ConfirmDeleteButton } from '@/components/shared/ConfirmDeleteButton'
 
 export default function OpponentsPage() {
   const { data: opponents }   = useOpponents()
   const createOpponent        = useCreateOpponent()
+  const deleteOpponent        = useDeleteOpponent()
+  const deleteOpponentPlayer  = useDeleteOpponentPlayer()
   const qc                    = useQueryClient()
 
   const [showForm, setShowForm]     = useState(false)
@@ -131,6 +134,12 @@ export default function OpponentsPage() {
                 <div className="text-xs text-slate-500 mt-0.5">
                   {o.registeredPlayers} player{o.registeredPlayers !== 1 ? 's' : ''} registered
                 </div>
+                <div className="flex items-center gap-3">
+                <ConfirmDeleteButton
+                  onConfirm={() => deleteOpponent.mutate(o.id)}
+                  itemName={o.name}
+                />
+              </div>
               </button>
             ))
           )}
@@ -258,6 +267,14 @@ export default function OpponentsPage() {
                       {p.notes && (
                         <span className="text-xs text-slate-500">{p.notes}</span>
                       )}
+                      <div className="flex items-center gap-3">
+                        <ConfirmDeleteButton
+                          onConfirm={() => deleteOpponentPlayer.mutate({
+                            opponentId: selectedOpponent.id, 
+                            playerId: p.id })}
+                          itemName={p.fullName}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

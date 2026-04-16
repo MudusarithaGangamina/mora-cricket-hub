@@ -19,4 +19,7 @@ export const seasonsApi = {
 
   update: (id: string, data: { name: string; startDate: string; endDate?: string }) =>
     apiClient.put(`/api/seasons/${id}`, { seasonId: id, ...data }),
+
+  delete: (id: string) =>
+    apiClient.delete(`/api/seasons/${id}`),
 }

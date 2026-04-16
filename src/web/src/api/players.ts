@@ -54,4 +54,7 @@ export const playersApi = {
     batchYear: number; battingStyle: string; primaryBowlingStyle?: string
     isActive: boolean
   }) => apiClient.put(`/api/players/${id}`, { playerId: id, ...data }),
+
+  delete: (id: string) =>
+    apiClient.delete(`/api/players/${id}`),
 }

@@ -61,6 +61,13 @@ public class Delivery : BaseEntity
     // Bowling side: nullable, only set when commentary explicitly states it
     public BowlingSide? BowlingSide { get; set; }
 
+    /// <summary>
+    /// True when this delivery was bowled by a replacement bowler
+    /// due to original bowler being injured mid-over.
+    /// The original bowler's figures will show e.g. 1.3 overs.
+    /// </summary>
+    public bool IsMidOverBowlerChange { get; set; } = false;
+
     // Shot & direction: always nullable, innings CommentaryCoverage explains why
     public ShotType? ShotType { get; set; }
     public DirectionZone? DirectionZone { get; set; }
