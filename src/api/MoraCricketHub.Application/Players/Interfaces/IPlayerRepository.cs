@@ -25,4 +25,6 @@ public interface IPlayerRepository
 
     Task<CareerStatsDto?> GetCareerStatsAsync(
         Guid playerId, CancellationToken cancellationToken);
+
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct);
 }

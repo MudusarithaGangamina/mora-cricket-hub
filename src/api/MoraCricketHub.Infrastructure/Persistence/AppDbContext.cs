@@ -27,11 +27,13 @@ public class AppDbContext : DbContext
     // ── Matches ───────────────────────────────────────────────────────────────
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<MatchSquad> MatchSquads => Set<MatchSquad>();
+    public DbSet<MatchOpponentSquad> MatchOpponentSquads => Set<MatchOpponentSquad>();
 
     // ── Innings & deliveries ──────────────────────────────────────────────────
     public DbSet<Innings> Innings => Set<Innings>();
     public DbSet<OverSummary> OverSummaries => Set<OverSummary>();
     public DbSet<Delivery> Deliveries => Set<Delivery>();
+    public DbSet<InningsEvent> InningsEvents => Set<InningsEvent>();
 
     // ── Performances ──────────────────────────────────────────────────────────
     public DbSet<MoraBattingPerformance> MoraBattingPerformances => Set<MoraBattingPerformance>();

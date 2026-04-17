@@ -36,4 +36,13 @@ public class Partnership : BaseEntity
     public int Batter1Runs { get; set; }
     public int Batter2Runs { get; set; }
     public bool Unbroken { get; set; }
+
+    /// <summary>
+    /// True while this partnership is still active (batters still together).
+    /// Set to false when partnership ends (wicket/retired/innings end).
+    /// Only one partnership per innings should have IsActive = true at any time.
+    /// </summary>
+    public bool IsActive { get; set; } = true;
+    public decimal StartedAtOver { get; set; } = 0;
+    public decimal? EndedAtOver { get; set; }
 }

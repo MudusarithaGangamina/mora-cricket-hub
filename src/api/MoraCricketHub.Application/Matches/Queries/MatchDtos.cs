@@ -117,9 +117,31 @@ public record SquadMemberDto(
     bool IsPlayingXi
 );
 
+public record OpponentSquadMemberDto(
+    Guid? OpponentPlayerId,
+    string PlayerName,
+    string? BattingStyle,
+    string? BowlingStyle,
+    int? BattingOrder
+);
+
 public record SetSquadCommand(
     Guid MatchId,
     List<Guid> PlayerIds   // All XI players
 ) : IRequest<bool>;
+
+public record MatchOpponentSquadEntry(
+    Guid? OpponentPlayerId,
+    string PlayerName,
+    string? BattingStyle,
+    string? BowlingStyle,
+    int? BattingOrder
+);
+
+public record SetOpponentSquadCommand(
+    Guid MatchId,
+    List<MatchOpponentSquadEntry> Entries
+) : IRequest<bool>;
+
 public record GetMatchSquadQuery(Guid MatchId) : IRequest<List<SquadMemberDto>>;
 public record GetMatchByIdQuery(Guid MatchId) : IRequest<MatchDetailDto?>;

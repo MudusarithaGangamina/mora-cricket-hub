@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MoraCricketHub.Application.Common;
 using MoraCricketHub.Application.Opponents.Commands;
 using MoraCricketHub.Application.Opponents.Queries;
 
@@ -64,6 +65,13 @@ public class OpponentsController : ControllerBase
         }
     }
 
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var success = await _mediator.Send(new DeleteOpponentCommand(id), ct);
+        return success ? NoContent() : NotFound();
+    }
+
     // ── Opponent Players ──────────────────────────────────────────────────────
 
     [HttpPost("{opponentId:guid}/players")]
@@ -110,5 +118,14 @@ public class OpponentsController : ControllerBase
                 { field = e.PropertyName, message = e.ErrorMessage })
             });
         }
+    }
+
+    [HttpDelete("players/{playerId:guid}")]
+    public async Task<IActionResult> DeletePlayer(
+        Guid playerId, CancellationToken ct)
+    {
+        var success = await _mediator.Send(
+            new DeleteOpponentPlayerCommand(playerId), ct);
+        return success ? NoContent() : NotFound();
     }
 }

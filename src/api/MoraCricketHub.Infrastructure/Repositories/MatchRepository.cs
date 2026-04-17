@@ -176,6 +176,49 @@ public class MatchRepository : IMatchRepository
         return true;
     }
 
+    public async Task<List<OpponentSquadMemberDto>> GetOpponentSquadAsync(
+    Guid matchId, CancellationToken ct)
+    => await _db.MatchOpponentSquads
+        .Where(m => m.MatchId == matchId)
+        .OrderBy(m => m.BattingOrder)
+        .ThenBy(m => m.PlayerName)
+        .Select(m => new OpponentSquadMemberDto(
+            m.OpponentPlayerId,
+            m.PlayerName,
+            m.BattingStyle,
+            m.BowlingStyle,
+            m.BattingOrder))
+        .ToListAsync(ct);
+
+    public async Task<bool> SetOpponentSquadAsync(
+        Guid matchId,
+        List<MatchOpponentSquadEntry> entries,
+        CancellationToken ct)
+    {
+        // Remove existing
+        var existing = await _db.MatchOpponentSquads
+            .Where(m => m.MatchId == matchId)
+            .ToListAsync(ct);
+        _db.MatchOpponentSquads.RemoveRange(existing);
+
+        // Add new
+        foreach (var e in entries)
+        {
+            _db.MatchOpponentSquads.Add(new Domain.Entities.MatchOpponentSquad
+            {
+                MatchId = matchId,
+                OpponentPlayerId = e.OpponentPlayerId,
+                PlayerName = e.PlayerName.Trim(),
+                BattingStyle = e.BattingStyle,
+                BowlingStyle = e.BowlingStyle,
+                BattingOrder = e.BattingOrder,
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private static MatchSummaryDto ToSummary(Match m) => new(

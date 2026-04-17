@@ -25,6 +25,8 @@ public class CreateInningsHandler : IRequestHandler<CreateInningsCommand, Guid>
             MoraWickeeperId = r.MoraWickeeperId,
             CommentaryCoverage = EnumParser.Parse<CommentaryCoverage>(
                                     r.CommentaryCoverage),
+            ScheduledOvers = r.scheduledOvers,
+            MaxOvers = r.scheduledOvers,
         }, ct);
 }
 

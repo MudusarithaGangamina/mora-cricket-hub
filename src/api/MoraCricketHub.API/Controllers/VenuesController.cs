@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using MoraCricketHub.Application.Common;
 using MoraCricketHub.Application.Venues.Commands;
 using MoraCricketHub.Application.Venues.Queries;
 
@@ -62,5 +63,12 @@ public class VenuesController : ControllerBase
                 { field = e.PropertyName, message = e.ErrorMessage })
             });
         }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var success = await _mediator.Send(new DeleteVenueCommand(id), ct);
+        return success ? NoContent() : NotFound();
     }
 }

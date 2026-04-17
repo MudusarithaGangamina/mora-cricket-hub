@@ -37,12 +37,11 @@ public class GetMatchSquadQueryHandler : IRequestHandler<GetMatchSquadQuery, Lis
         _matchRepository = matchRepository;
     }
 
-    public async Task<List<SquadMemberDto>> Handle(
+    public Task<List<SquadMemberDto>> Handle(
         GetMatchSquadQuery request,
         CancellationToken cancellationToken)
-    {
-        return await _matchRepository.GetSquadAsync(request.MatchId, cancellationToken);
-    }
+        =>_matchRepository.GetSquadAsync(request.MatchId, cancellationToken);
+    
 }
 
 public class SetSquadCommandHandler : IRequestHandler<SetSquadCommand, bool>
@@ -54,8 +53,31 @@ public class SetSquadCommandHandler : IRequestHandler<SetSquadCommand, bool>
         _matchRepository = matchRepository;
     }
 
-    public async Task<bool> Handle(SetSquadCommand request, CancellationToken cancellationToken)
-    {
-        return await _matchRepository.SetSquadAsync(request.MatchId, request.PlayerIds, cancellationToken);
-    }
+    public Task<bool> Handle(SetSquadCommand request, CancellationToken cancellationToken)
+        =>_matchRepository.SetSquadAsync(request.MatchId, request.PlayerIds, cancellationToken);
+    
+}
+
+public class SetOpponentSquadHandler
+    : IRequestHandler<SetOpponentSquadCommand, bool>
+{
+    private readonly IMatchRepository _repo;
+    public SetOpponentSquadHandler(IMatchRepository repo) => _repo = repo;
+
+    public Task<bool> Handle(SetOpponentSquadCommand r, CancellationToken ct)
+        => _repo.SetOpponentSquadAsync(r.MatchId, r.Entries, ct);
+}
+
+public record GetOpponentSquadQuery(Guid MatchId)
+    : IRequest<List<OpponentSquadMemberDto>>;
+
+public class GetOpponentSquadHandler
+    : IRequestHandler<GetOpponentSquadQuery, List<OpponentSquadMemberDto>>
+{
+    private readonly IMatchRepository _repo;
+    public GetOpponentSquadHandler(IMatchRepository repo) => _repo = repo;
+
+    public Task<List<OpponentSquadMemberDto>> Handle(
+        GetOpponentSquadQuery r, CancellationToken ct)
+        => _repo.GetOpponentSquadAsync(r.MatchId, ct);
 }

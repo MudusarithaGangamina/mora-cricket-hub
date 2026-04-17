@@ -42,4 +42,13 @@ public class VenueRepository : IVenueRepository
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
+    {
+        var venue = await _db.Venues.FirstOrDefaultAsync(v => v.Id == id, ct);
+        if (venue is null) return false;
+        _db.Venues.Remove(venue);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 }

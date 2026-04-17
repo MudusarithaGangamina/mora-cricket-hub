@@ -13,4 +13,5 @@ public interface ISeasonRepository
     Task<Season?> FindByIdAsync(Guid id, CancellationToken ct);
     Task<Guid> CreateAsync(Season season, CancellationToken ct);
     Task<bool> UpdateAsync(Season season, CancellationToken ct);
+    Task<bool> DeleteAsync(Guid id, CancellationToken ct);
 }

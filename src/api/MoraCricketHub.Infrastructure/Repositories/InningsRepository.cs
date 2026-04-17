@@ -197,6 +197,21 @@ public class InningsRepository : IInningsRepository
         return true;
     }
 
+    public async Task<Guid> AddInningsEventAsync(
+    InningsEvent ev, CancellationToken ct)
+    {
+        _db.InningsEvents.Add(ev);
+        await _db.SaveChangesAsync(ct);
+        return ev.Id;
+    }
+
+    public async Task<List<InningsEvent>> GetInningsEventsAsync(
+        Guid inningsId, CancellationToken ct)
+        => await _db.InningsEvents
+            .Where(e => e.InningsId == inningsId)
+            .OrderBy(e => e.AtOver)
+            .ToListAsync(ct);
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private async Task<Innings?> LoadInningsWithAll(

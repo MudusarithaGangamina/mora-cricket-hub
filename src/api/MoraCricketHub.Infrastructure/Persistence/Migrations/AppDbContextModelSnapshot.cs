@@ -115,6 +115,9 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("InningsId")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsMidOverBowlerChange")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsWicket")
                         .HasColumnType("boolean");
 
@@ -267,6 +270,9 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("EndedAtOver")
+                        .HasColumnType("decimal(4,1)");
+
                     b.Property<int>("ExtrasByes")
                         .HasColumnType("integer");
 
@@ -292,11 +298,26 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsConfirmed")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("MatchId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("MaxOvers")
+                        .HasColumnType("integer");
+
                     b.Property<Guid?>("MoraWickeeperId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("ScheduledOvers")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Target")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalOversFaced")
                         .HasColumnType("decimal(4,1)");
@@ -321,6 +342,57 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.HasIndex("MoraWickeeperId");
 
                     b.ToTable("Innings");
+                });
+
+            modelBuilder.Entity("MoraCricketHub.Domain.Entities.InningsEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("AtOver")
+                        .HasColumnType("decimal(4,1)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("InningsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("RevisedOvers")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TeamScoreAtEvent")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TeamWicketsAtEvent")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventType");
+
+                    b.HasIndex("InningsId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("InningsEvents");
                 });
 
             modelBuilder.Entity("MoraCricketHub.Domain.Entities.Match", b =>
@@ -467,6 +539,49 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.HasIndex("VenueType");
 
                     b.ToTable("Matches");
+                });
+
+            modelBuilder.Entity("MoraCricketHub.Domain.Entities.MatchOpponentSquad", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("BattingOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BattingStyle")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<string>("BowlingStyle")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OpponentPlayerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PlayerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("OpponentPlayerId");
+
+                    b.ToTable("MatchOpponentSquads");
                 });
 
             modelBuilder.Entity("MoraCricketHub.Domain.Entities.MatchSquad", b =>
@@ -987,8 +1102,14 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("EndedAtOver")
+                        .HasColumnType("decimal(4,1)");
+
                     b.Property<Guid>("InningsId")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid?>("MoraBatter1Id")
                         .HasColumnType("uuid");
@@ -1013,6 +1134,9 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.Property<int>("Runs")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("StartedAtOver")
+                        .HasColumnType("decimal(4,1)");
+
                     b.Property<bool>("Unbroken")
                         .HasColumnType("boolean");
 
@@ -1031,6 +1155,8 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.HasIndex("OppBatter1Id");
 
                     b.HasIndex("OppBatter2Id");
+
+                    b.HasIndex("InningsId", "IsActive");
 
                     b.HasIndex("MoraBatter1Id", "MoraBatter2Id");
 
@@ -1415,6 +1541,24 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.Navigation("MoraWickekeeper");
                 });
 
+            modelBuilder.Entity("MoraCricketHub.Domain.Entities.InningsEvent", b =>
+                {
+                    b.HasOne("MoraCricketHub.Domain.Entities.Innings", "Innings")
+                        .WithMany("Events")
+                        .HasForeignKey("InningsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MoraCricketHub.Domain.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Innings");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("MoraCricketHub.Domain.Entities.Match", b =>
                 {
                     b.HasOne("MoraCricketHub.Domain.Entities.Player", "MoraCaptain")
@@ -1460,6 +1604,24 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
                     b.Navigation("Tournament");
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("MoraCricketHub.Domain.Entities.MatchOpponentSquad", b =>
+                {
+                    b.HasOne("MoraCricketHub.Domain.Entities.Match", "Match")
+                        .WithMany()
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MoraCricketHub.Domain.Entities.OpponentPlayer", "OpponentPlayer")
+                        .WithMany()
+                        .HasForeignKey("OpponentPlayerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Match");
+
+                    b.Navigation("OpponentPlayer");
                 });
 
             modelBuilder.Entity("MoraCricketHub.Domain.Entities.MatchSquad", b =>
@@ -1733,6 +1895,8 @@ namespace MoraCricketHub.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("MoraCricketHub.Domain.Entities.Innings", b =>
                 {
                     b.Navigation("Deliveries");
+
+                    b.Navigation("Events");
 
                     b.Navigation("FallOfWickets");
 

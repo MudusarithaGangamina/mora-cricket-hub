@@ -42,5 +42,9 @@ public class PartnershipConfiguration : IEntityTypeConfiguration<Partnership>
             .WithMany()
             .HasForeignKey(p => p.OppBatter2Id)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasIndex(p => new { p.InningsId, p.IsActive });
+        builder.Property(p => p.StartedAtOver).HasColumnType("decimal(4,1)");
+        builder.Property(p => p.EndedAtOver).HasColumnType("decimal(4,1)");
     }
 }
