@@ -1,12 +1,12 @@
 import { clsx } from 'clsx'
 import { BowlingStyleLabels } from '@/types/enums'
 import type { SquadMember, OpponentSquadMember } from '@/api/matches'
-import type { PitchState } from './types'
+import type { LivePitchState } from './pitchState'
 
 interface Props {
   isMoraBatting:        boolean
-  pitch:                PitchState
-  setPitch:             React.Dispatch<React.SetStateAction<PitchState>>
+  pitch:                LivePitchState
+  setPitch:             React.Dispatch<React.SetStateAction<LivePitchState>>
   availableMoraBatters: SquadMember[]
   availableMoraBowlers: SquadMember[]
   oppSquad:             OpponentSquadMember[]
@@ -26,8 +26,8 @@ export function PlayersPanel({
   moraSquad, willRotate, isEndOfOver,
   bowlingSide, setBowlingSide,
 }: Props) {
-  const set = (key: keyof PitchState, val: string) =>
-    setPitch(p => ({ ...p, [key]: val }))
+  const set = (key: keyof LivePitchState, val: string) =>
+    setPitch((p: LivePitchState) => ({ ...p, [key]: val }))
 
   // When a known opponent batter is typed/selected from autocomplete,
   // auto-fill their batting style from the squad
@@ -53,20 +53,20 @@ export function PlayersPanel({
   }
 
   const swapStrike = () => {
-    if (isMoraBatting) {
-      setPitch(p => ({
-        ...p,
-        strikerId:    p.nonStrikerId,
-        nonStrikerId: p.strikerId,
-      }))
-    } else {
-      setPitch(p => ({
-        ...p,
-        oppStrikerName:    p.oppNonStrikerName,
-        oppNonStrikerName: p.oppStrikerName,
-      }))
-    }
+  if (isMoraBatting) {
+    setPitch((p: LivePitchState) => ({
+      ...p,
+      strikerId:    p.nonStrikerId,
+      nonStrikerId: p.strikerId,
+    }))
+  } else {
+    setPitch((p: LivePitchState) => ({
+      ...p,
+      oppStrikerName:    p.oppNonStrikerName,
+      oppNonStrikerName: p.oppStrikerName,
+    }))
   }
+}
 
   // Batting players from opp squad (for striker autocomplete)
   const oppBatters = oppSquad

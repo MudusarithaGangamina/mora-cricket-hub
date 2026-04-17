@@ -1,32 +1,65 @@
+import { useState } from 'react'
 import { clsx } from 'clsx'
 import { ShotType } from '@/types/enums'
 import type { BallState } from './types'
-import {
-  RUN_BUTTONS,
-  EXTRAS_OPTIONS,
-  DISMISSAL_TYPES,
-  NEEDS_FIELDER,
-} from './types'
-import { FormField } from '@/components/shared/FormField'
+import { RUN_BUTTONS, EXTRAS_OPTIONS } from './types'
+import { WicketModal, type WicketData } from './WicketModal'
 import type { SquadMember } from '@/api/matches'
 
 interface Props {
-  ball: BallState
-  setBall: React.Dispatch<React.SetStateAction<BallState>>
-  isMoraBatting: boolean
-  strikerId: string
+  ball:                 BallState
+  setBall:              React.Dispatch<React.SetStateAction<BallState>>
+  isMoraBatting:        boolean
+  strikerId:            string
+  nonStrikerId:         string
+  oppStrikerName:       string
+  oppNonStrikerName:    string
   availableMoraBatters: SquadMember[]
-  moraSquad: SquadMember[]
+  moraSquad:            SquadMember[]
+  currentKeeperId:      string
+  ballNumber: number
 }
 
 const SHOT_TYPES = Object.values(ShotType)
 
 export function BallOutcomePanel({
-  ball, setBall, isMoraBatting, strikerId,
-  availableMoraBatters, moraSquad,
+  ball, setBall,
+  isMoraBatting,
+  strikerId, nonStrikerId,
+  oppStrikerName, oppNonStrikerName,
+  moraSquad,
+  currentKeeperId,ballNumber
 }: Props) {
+  const [wicketModalOpen, setWicketModalOpen] = useState(false)
+
   const set = <K extends keyof BallState>(k: K, v: BallState[K]) =>
     setBall(b => ({ ...b, [k]: v }))
+
+  const handleWicketConfirm = (data: WicketData) => {
+    setBall(b => ({
+      ...b,
+      isWicket:       true,
+      wicketType:     data.wicketType,
+      dismissedId:    data.dismissedId,
+      dismissedName:  data.dismissedName,
+      moraFielderId:  isMoraBatting ? '' : data.fielderId,
+      oppFielderName: isMoraBatting ? data.fielderName : '',
+      runOutEnd:      data.runOutEnd,
+    }))
+    setWicketModalOpen(false)
+  }
+
+  const handleClearWicket = () => {
+    setBall(b => ({
+      ...b,
+      isWicket:      false,
+      wicketType:    '',
+      dismissedId:   '',
+      dismissedName: '',
+      moraFielderId: '',
+      oppFielderName:'',
+    }))
+  }
 
   return (
     <div className="space-y-4">
@@ -76,9 +109,13 @@ export function BallOutcomePanel({
               key={ex.val}
               type="button"
               onClick={() => {
+                // Clear wicket if new extras type makes it invalid
+                if (ball.isWicket) handleClearWicket()
                 set('extrasType', ex.val)
                 set('extrasRuns',
                   ex.val === 'WIDE' || ex.val === 'NO_BALL' ? 1 : 0)
+                // Wide and No-ball can't have runs off bat
+                if (ex.val === 'WIDE') set('runsOffBat', 0)
               }}
               className={clsx(
                 'py-2 rounded-lg text-xs font-medium transition-colors',
@@ -95,7 +132,12 @@ export function BallOutcomePanel({
         {ball.extrasType && (
           <div>
             <label className="text-xs text-slate-400 mb-1 block">
-              Total extras runs
+              Total extra runs
+              {ball.extrasType === 'WIDE' && (
+                <span className="text-slate-500 ml-1">
+                  (1 = standard wide, 2 = wide + 1 run, etc.)
+                </span>
+              )}
             </label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5, 6].map(n => (
@@ -116,147 +158,65 @@ export function BallOutcomePanel({
             </div>
           </div>
         )}
+
+        {/* Wide can't have runs off bat */}
+        {ball.extrasType === 'WIDE' && ball.runsOffBat > 0 && (
+          <p className="text-xs text-amber-400 mt-1">
+            ⚠ Wides cannot have runs off bat — runs off bat cleared.
+          </p>
+        )}
       </div>
 
       {/* ── Wicket ── */}
       <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
             Wicket
           </p>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={ball.isWicket}
-              onChange={e => {
-                set('isWicket', e.target.checked)
-                if (!e.target.checked) set('wicketType', '')
-              }}
-              className="accent-red-500 w-4 h-4"
-            />
-            <span className="text-sm font-semibold text-red-400">
-              🔴 Wicket
-            </span>
-          </label>
-        </div>
 
-        {ball.isWicket && (
-          <div className="space-y-3">
-            {/* Dismissal type grid */}
-            <div className="grid grid-cols-2 gap-2">
-              {DISMISSAL_TYPES.map(d => (
-                <button
-                  key={d.value}
-                  type="button"
-                  onClick={() => set('wicketType', d.value)}
-                  className={clsx(
-                    'py-2 px-3 rounded-lg text-xs text-left transition-colors',
-                    ball.wicketType === d.value
-                      ? 'bg-red-700 text-white'
-                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                  )}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Info boxes */}
-            {ball.wicketType === 'RETIRED_HURT' && (
-              <p className="text-xs text-amber-400 bg-amber-950/30 border
-                            border-amber-800/40 rounded-lg px-3 py-2">
-                ℹ Retired Hurt — this batter can return later in the innings.
-              </p>
-            )}
-            {ball.wicketType === 'RETIRED_OUT' && (
-              <p className="text-xs text-red-400 bg-red-950/30 border
-                            border-red-800/40 rounded-lg px-3 py-2">
-                ℹ Retired Out — this batter cannot return.
-              </p>
-            )}
-
-            {/* Dismissed batter */}
-            <FormField label="Dismissed batter">
-              {isMoraBatting ? (
-                <select
-                  value={ball.dismissedId}
-                  onChange={e => set('dismissedId', e.target.value)}
-                  className="input-base w-full"
-                >
-                  <option value="">Striker (default)</option>
-                  {availableMoraBatters.map(p => (
-                    <option key={p.playerId} value={p.playerId}>
-                      {p.fullName}
-                      {p.playerId === strikerId ? ' (striker)' : ' (non-striker)'}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  value={ball.dismissedName}
-                  onChange={e => set('dismissedName', e.target.value)}
-                  className="input-base w-full"
-                  placeholder="Dismissed batter name"
-                />
-              )}
-            </FormField>
-
-            {/* Run-out end */}
-            {ball.wicketType === 'RUN_OUT' && (
-              <FormField label="Run out at which end?">
-                <div className="flex gap-2">
-                  {(['STRIKER', 'NON_STRIKER'] as const).map(end => (
-                    <button
-                      key={end}
-                      type="button"
-                      onClick={() => set('runOutEnd', end)}
-                      className={clsx(
-                        'flex-1 py-2 rounded-lg text-xs font-medium',
-                        'transition-colors',
-                        ball.runOutEnd === end
-                          ? 'bg-red-700 text-white'
-                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                      )}
-                    >
-                      {end === 'STRIKER'
-                        ? "Striker's end"
-                        : "Non-striker's end"}
-                    </button>
-                  ))}
-                </div>
-              </FormField>
-            )}
-
-            {/* Fielder */}
-            {NEEDS_FIELDER.includes(ball.wicketType) && (
-              <FormField label="Fielder">
-                {isMoraBatting ? (
-                  <input
-                    value={ball.oppFielderName}
-                    onChange={e => set('oppFielderName', e.target.value)}
-                    className="input-base w-full"
-                    placeholder="Opponent fielder name"
-                  />
-                ) : (
-                  <select
-                    value={ball.moraFielderId}
-                    onChange={e => set('moraFielderId', e.target.value)}
-                    className="input-base w-full"
-                  >
-                    <option value="">Select fielder...</option>
-                    {moraSquad
-                      .filter(p => p.isPlayingXi)
-                      .map(p => (
-                        <option key={p.playerId} value={p.playerId}>
-                          {p.fullName}
-                        </option>
-                      ))}
-                  </select>
+          {ball.isWicket ? (
+            /* Show what was selected */
+            <div className="flex items-center gap-3">
+              <div className="text-sm">
+                <span className="text-red-400 font-bold">
+                  🔴 {ball.wicketType.replace(/_/g, ' ')}
+                </span>
+                {ball.dismissedName && (
+                  <span className="text-slate-400 ml-2 text-xs">
+                    {ball.dismissedName}
+                  </span>
                 )}
-              </FormField>
-            )}
-          </div>
-        )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setWicketModalOpen(true)}
+                className="text-xs text-slate-400 hover:text-white
+                           transition-colors border border-slate-600
+                           rounded px-2 py-0.5"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={handleClearWicket}
+                className="text-xs text-red-400 hover:text-red-300
+                           transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setWicketModalOpen(true)}
+              className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60
+                         text-red-300 border border-red-800/40 rounded-lg
+                         text-sm font-semibold transition-colors"
+            >
+              🔴 Add Wicket
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Shot type ── */}
@@ -284,6 +244,22 @@ export function BallOutcomePanel({
           ))}
         </div>
       </div>
+
+      {/* ── Wicket Modal ── */}
+      <WicketModal
+        open={wicketModalOpen}
+        onClose={() => setWicketModalOpen(false)}
+        onConfirm={handleWicketConfirm}
+        extrasType={ball.extrasType}
+        ballNumber={ballNumber} 
+        isMoraBatting={isMoraBatting}
+        strikerId={strikerId}
+        nonStrikerId={nonStrikerId}
+        oppStrikerName={oppStrikerName}
+        oppNonStrikerName={oppNonStrikerName}
+        moraSquad={moraSquad}
+        currentKeeperId={currentKeeperId}
+      />
     </div>
   )
 }

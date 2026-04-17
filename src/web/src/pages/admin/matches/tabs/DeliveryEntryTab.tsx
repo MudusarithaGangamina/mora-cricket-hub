@@ -229,13 +229,22 @@ export function DeliveryEntryTab({
         {/* Col 3: Ball outcome */}
         <div className="xl:col-span-1 space-y-4">
           <BallOutcomePanel
-            ball={ball}
-            setBall={setBall}
-            isMoraBatting={isMoraBatting}
-            strikerId={pitch.strikerId}
-            availableMoraBatters={availableMoraBatters}
-            moraSquad={moraSquad}
-          />
+  ball={ball}
+  setBall={setBall}
+  isMoraBatting={isMoraBatting}
+  strikerId={pitch.strikerId}
+  nonStrikerId={pitch.nonStrikerId}
+  oppStrikerName={pitch.oppStrikerName}
+  oppNonStrikerName={pitch.oppNonStrikerName}
+  availableMoraBatters={availableMoraBatters}
+  moraSquad={moraSquad}
+  ballNumber={ballNumber}
+  currentKeeperId={
+    // The keeper is the match-level keeper unless innings has its own
+    innings.moraWickeeperId ??
+    moraSquad.find(p => p.isPlayingXi)?.playerId ?? ''
+  }
+/>
           <BallSummaryBar
             ball={ball}
             overNumber={overNumber}

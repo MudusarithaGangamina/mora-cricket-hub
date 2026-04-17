@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { inningsApi } from '@/api/innings'
 import type { SquadMember } from '@/api/matches'
 import type { BatterScore, BowlerFigures } from './useDeliveryState'
@@ -28,7 +28,6 @@ export function LiveScorecard({
   oppNonStriker,
   overSummaries,
 }: Props) {
-  const qc = useQueryClient()
 
   // Auto-generated FOW from backend
   const { data: scorecard } = useQuery({

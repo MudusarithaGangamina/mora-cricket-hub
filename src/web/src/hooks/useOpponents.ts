@@ -30,9 +30,8 @@ export const useDeleteOpponent = () => {
 export const useDeleteOpponentPlayer = () => {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ opponentId, playerId }: {
-      opponentId: string; playerId: string
-    }) => opponentsApi.deletePlayer(playerId),
+    mutationFn: (vars: { opponentId: string; playerId: string }) =>
+      opponentsApi.deletePlayer(vars.playerId),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['opponent', vars.opponentId] })
       qc.invalidateQueries({ queryKey: ['opponents'] })
