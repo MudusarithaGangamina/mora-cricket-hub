@@ -41,3 +41,33 @@ export const useMatchScorecards = (matchId: string) =>
     queryFn:  () => inningsApi.getMatchScorecards(matchId),
     enabled:  !!matchId,
   })
+
+  export const useUpdateMatch = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CreateMatchData }) =>
+      matchesApi.update(id, data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['match',   vars.id] })
+      qc.invalidateQueries({ queryKey: ['matches']          })
+    },
+  })
+}
+
+export const useConfirmMatch = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => matchesApi.confirm(id),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ['match',   id] })
+      qc.invalidateQueries({ queryKey: ['matches']     })
+    },
+  })
+}
+
+export const useMatchSummaryData = (matchId: string) =>
+  useQuery({
+    queryKey: ['match-summary', matchId],
+    queryFn:  () => matchesApi.getSummaryData(matchId),
+    enabled:  !!matchId,
+  })

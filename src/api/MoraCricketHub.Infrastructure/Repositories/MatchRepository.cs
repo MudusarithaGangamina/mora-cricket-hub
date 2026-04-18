@@ -112,6 +112,7 @@ public class MatchRepository : IMatchRepository
             m.PlayerOfMatchTeam,
             m.Notes,
             m.ScheduledOvers,
+            m.IsConfirmed,
             m.Innings
                 .OrderBy(i => i.InningsNumber)
                 .Select(ToInningsSummary)
@@ -219,6 +220,101 @@ public class MatchRepository : IMatchRepository
         return true;
     }
 
+    public async Task<MatchSummaryDataDto?> GetMatchSummaryDataAsync(
+    Guid matchId, CancellationToken ct)
+    {
+        var match = await _db.Matches
+            .Include(m => m.Innings)
+                .ThenInclude(i => i.MoraBattingPerformances)
+                    .ThenInclude(p => p.Player)
+            .Include(m => m.Innings)
+                .ThenInclude(i => i.OpponentBattingPerformances)
+            .Include(m => m.Innings)
+                .ThenInclude(i => i.MoraBowlingPerformances)
+                    .ThenInclude(p => p.Player)
+            .Include(m => m.Innings)
+                .ThenInclude(i => i.OpponentBowlingPerformances)
+            .FirstOrDefaultAsync(m => m.Id == matchId, ct);
+
+        if (match is null) return null;
+
+        var inningsDisplays = match.Innings
+            .OrderBy(i => i.InningsNumber)
+            .Select(i =>
+            {
+                var isMora = i.BattingTeam == Domain.Enums.BattingTeam.Mora;
+
+                // Top 4 batters (by runs)
+                List<TopBatterDto> topBatters;
+                if (isMora)
+                {
+                    topBatters = i.MoraBattingPerformances
+                        .Where(p => p.DismissalType != "DNB")
+                        .OrderByDescending(p => p.Runs)
+                        .Take(4)
+                        .Select(p => new TopBatterDto(
+                            p.Player.ShortName,
+                            p.Runs, p.BallsFaced,
+                            p.IsNotOut, p.Fours, p.Sixes))
+                        .ToList();
+                }
+                else
+                {
+                    topBatters = i.OpponentBattingPerformances
+                        .Where(p => p.DismissalType != "DNB")
+                        .OrderByDescending(p => p.Runs)
+                        .Take(4)
+                        .Select(p => new TopBatterDto(
+                            p.PlayerName,
+                            p.Runs, p.BallsFaced,
+                            p.IsNotOut, p.Fours, p.Sixes))
+                        .ToList();
+                }
+
+                // Top 4 bowlers (by wickets then economy)
+                List<TopBowlerDto> topBowlers;
+                if (!isMora)
+                {
+                    topBowlers = i.MoraBowlingPerformances
+                        .OrderByDescending(p => p.Wickets)
+                        .ThenBy(p => p.OversBowled > 0
+                            ? p.RunsConceded / p.OversBowled : 99)
+                        .Take(4)
+                        .Select(p => new TopBowlerDto(
+                            p.Player.ShortName,
+                            p.OversBowled,
+                            p.RunsConceded,
+                            p.Wickets))
+                        .ToList();
+                }
+                else
+                {
+                    topBowlers = i.OpponentBowlingPerformances
+                        .OrderByDescending(p => p.Wickets)
+                        .ThenBy(p => p.OversBowled > 0
+                            ? p.RunsConceded / p.OversBowled : 99)
+                        .Take(4)
+                        .Select(p => new TopBowlerDto(
+                            p.PlayerName,
+                            p.OversBowled,
+                            p.RunsConceded,
+                            p.Wickets))
+                        .ToList();
+                }
+
+                return new InningsSummaryDisplay(
+                    i.BattingTeam.ToString(),
+                    i.TotalRuns,
+                    i.TotalWickets,
+                    i.TotalOversFaced,
+                    topBatters,
+                    topBowlers);
+            })
+            .ToList();
+
+        return new MatchSummaryDataDto(matchId, inningsDisplays);
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private static MatchSummaryDto ToSummary(Match m) => new(
@@ -242,7 +338,8 @@ public class MatchRepository : IMatchRepository
         m.MoraCaptain is null ? null : m.MoraCaptain.FullName,
         m.PlayerOfMatchName,
         m.PlayerOfMatchTeam,
-        m.ScheduledOvers
+        m.ScheduledOvers,
+        m.IsConfirmed
     );
 
     private static InningsSummaryDto ToInningsSummary(Innings i) => new(
