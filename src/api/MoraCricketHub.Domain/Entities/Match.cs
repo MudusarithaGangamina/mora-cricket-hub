@@ -42,6 +42,7 @@ public class Match : BaseEntity
     public ResultType? ResultType { get; set; }
     public int? ResultMargin { get; set; }
     public string? ResultMarginType { get; set; }  // "RUNS" | "WICKETS"
+    public bool IsConfirmed { get; set; } = false;
 
     // DLS / Parabola
     public bool DlsApplied { get; set; } = false;

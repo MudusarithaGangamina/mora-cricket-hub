@@ -17,4 +17,5 @@ public interface IMatchRepository
     Task<List<SquadMemberDto>> GetSquadAsync(Guid matchId, CancellationToken ct);
     Task<List<OpponentSquadMemberDto>> GetOpponentSquadAsync(Guid matchId, CancellationToken ct);
     Task<bool> SetOpponentSquadAsync(Guid matchId, List<MatchOpponentSquadEntry> entries, CancellationToken ct);
+    Task<MatchSummaryDataDto?> GetMatchSummaryDataAsync(Guid matchId, CancellationToken ct);
 }

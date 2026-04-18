@@ -27,7 +27,8 @@ public record MatchSummaryDto(
     string? MoraCaptainName,
     string? PlayerOfMatchName,
     string? PlayerOfMatchTeam,
-    int ScheduledOvers
+    int ScheduledOvers,
+    bool IsConfirmed
 );
 
 // ── Detail view — full match info ─────────────────────────────────────────────
@@ -72,6 +73,7 @@ public record MatchDetailDto(
     string? PlayerOfMatchTeam,
     string? Notes,
     int ScheduledOvers,
+    bool IsConfirmed,
     List<InningsSummaryDto> Innings
 );
 

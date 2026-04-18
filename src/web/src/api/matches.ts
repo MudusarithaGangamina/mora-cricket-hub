@@ -22,6 +22,7 @@ export interface MatchSummary {
   playerOfMatchName: string | null
   playerOfMatchTeam: string | null
   scheduledOvers: number
+  isConfirmed: boolean
 }
 
 export interface SquadMember {
@@ -76,6 +77,7 @@ export interface MatchDetail {
   scheduledOvers: number
   innings: any[]
   squad: SquadMember[]
+  isConfirmed: boolean
 }
 
 export interface PagedMatches {
@@ -179,4 +181,16 @@ setOpponentSquad: (id: string, entries: SetOpponentSquadEntry[]) =>
     matchId: id,
     entries,
   }),
+
+  // Add to matchesApi:
+update: (id: string, data: CreateMatchData) =>
+  apiClient.put(`/api/matches/${id}`, {
+    matchId: id, ...data
+  }),
+
+confirm: (id: string) =>
+  apiClient.patch(`/api/matches/${id}/confirm`),
+
+getSummaryData: (id: string) =>
+  apiClient.get(`/api/matches/${id}/summary`).then(r => r.data),
 }

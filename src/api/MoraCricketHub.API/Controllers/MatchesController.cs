@@ -125,4 +125,54 @@ public class MatchesController : ControllerBase
         return NoContent();
     }
 
+    // PUT /api/matches/{id}
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UpdateMatchCommand command,
+        CancellationToken ct)
+    {
+        if (id != command.MatchId)
+            return BadRequest(new { message = "Id mismatch." });
+        try
+        {
+            var success = await _mediator.Send(command, ct);
+            if (!success)
+                return BadRequest(new
+                {
+                    message =
+                    "Match not found or is confirmed (locked)."
+                });
+            return NoContent();
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new
+            {
+                errors = ex.Errors.Select(e => new
+                { field = e.PropertyName, message = e.ErrorMessage })
+            });
+        }
+    }
+
+    // PATCH /api/matches/{id}/confirm
+    [HttpPatch("{id:guid}/confirm")]
+    public async Task<IActionResult> Confirm(
+        Guid id, CancellationToken ct)
+    {
+        var success = await _mediator.Send(
+            new ConfirmMatchCommand(id), ct);
+        return success ? NoContent() : NotFound();
+    }
+
+    // GET /api/matches/{id}/summary
+    [HttpGet("{id:guid}/summary")]
+    public async Task<IActionResult> GetSummary(
+        Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(
+            new GetMatchSummaryDataQuery(id), ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
 }
